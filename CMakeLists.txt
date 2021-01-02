@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.17)
-project(husky_compute)
+project(husky_engine)
 
 set(CMAKE_CXX_STANDARD 17)
 
 include_directories(.)
-add_executable(husky_compute
+add_executable(husky_engine
         grammar/HuskyLangParser.cpp
         grammar/HuskyLangLexer.cpp
         grammar/HuskyLangBaseVisitor.cpp
@@ -20,13 +20,13 @@ add_executable(husky_compute
 find_package(cpprestsdk REQUIRED)
 find_package(OpenSSL REQUIRED)
 
-target_include_directories(husky_compute PUBLIC
+target_include_directories(husky_engine PUBLIC
         /usr/local/include/antlr4-runtime
         /usr/local/opt/mysql-connector-c++/include)
-target_link_directories(husky_compute PUBLIC
+target_link_directories(husky_engine PUBLIC
         /usr/local/lib
         /usr/local/opt/mysql-connector-c++/lib)
-target_link_libraries(husky_compute
+target_link_libraries(husky_engine
         antlr4-runtime
         cpprestsdk::cpprest
         mysqlcppconn8)
