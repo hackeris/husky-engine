@@ -269,5 +269,10 @@ expression_ptr graph_compiler::compile(const std::string &formula) {
     graph_compiler visitor;
 
     Any visited = visitor.visit(tree);
+    parser.reset();
+    tokens.reset();
+    lexer.reset();
+    input.reset();
+
     return visited.as<expression_ptr>();
 }
