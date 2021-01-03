@@ -265,9 +265,9 @@ expression_ptr graph_compiler::compile(const std::string &formula) {
     CommonTokenStream tokens(&lexer);
     HuskyLangParser parser(&tokens);
 
-    ParseTree* tree = parser.statement();
+    ParseTree *tree = parser.statement();
     graph_compiler visitor;
-    Any visited = visitor.visit(tree);
 
+    Any visited = visitor.visit(tree);
     return visited.as<expression_ptr>();
 }
