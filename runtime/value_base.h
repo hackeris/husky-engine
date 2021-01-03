@@ -13,6 +13,7 @@
 #include <optional>
 #include <utility>
 #include <variant>
+#include <cassert>
 
 #include <cmath>
 
