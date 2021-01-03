@@ -382,7 +382,7 @@ public:
     }
 
     [[nodiscard]]
-    const std::map<std::string, primitive> &getValues() const {
+    const std::map<std::string, primitive> &get_values() const {
         return *values;
     }
 

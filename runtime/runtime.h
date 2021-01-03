@@ -16,7 +16,7 @@
 
 class runtime;
 
-using Function = std::function<value_holder(
+using ext_function = std::function<value_holder(
         const runtime &rt,
         const std::vector<value_holder> &)>;
 
@@ -30,10 +30,10 @@ public:
     bool has_function(const std::string &name) const;
 
     [[nodiscard]]
-    bool hasIdentifier(const std::string &name) const;
+    bool has_identifier(const std::string &name) const;
 
     [[nodiscard]]
-    const Function &get_function(const std::string &name) const;
+    const ext_function &get_function(const std::string &name) const;
 
     [[nodiscard]]
     value_holder evaluate(const identifier_ref &identifier) const;
@@ -42,7 +42,7 @@ public:
     value_holder evaluate(const identifier_ref &identifier, int index) const;
 
     [[nodiscard]]
-    std::set<std::string> getSymbols() const;
+    std::set<std::string> get_symbols() const;
 
 private:
     [[nodiscard]]
@@ -51,7 +51,8 @@ private:
 private:
     std::string date;
     std::shared_ptr<data_repository> repo;
-    std::map<std::string, Function> functions;
+    std::map<std::string, ext_function> functions;
+    std::map<std::string, std::function<value_holder(const runtime&)>> internal_idents;
 };
 
 

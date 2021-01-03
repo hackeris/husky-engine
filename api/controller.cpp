@@ -74,7 +74,7 @@ web::json::value to_json(const value_holder &holder) {
         }
     } else if (holder.holds<vector>()) {
         const auto &v = holder.get<vector>();
-        const auto &values = v.getValues();
+        const auto &values = v.get_values();
         if (!values.empty()) {
             auto iter = values.begin();
             auto ele = (*iter).second;
