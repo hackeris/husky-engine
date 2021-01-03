@@ -2,8 +2,8 @@
 // Created by rainm on 2021/1/1.
 //
 
-#ifndef HUSKY_COMPUTE_GRAPHCOMPILER_H
-#define HUSKY_COMPUTE_GRAPHCOMPILER_H
+#ifndef HUSKY_ENGINE_GRAPHCOMPILER_H
+#define HUSKY_ENGINE_GRAPHCOMPILER_H
 
 #include "lang/graph.h"
 #include "grammar/HuskyLangVisitor.h"
@@ -74,4 +74,4 @@ private:
 };
 
 
-#endif //HUSKY_COMPUTE_GRAPHCOMPILER_H
+#endif //HUSKY_ENGINE_GRAPHCOMPILER_H
