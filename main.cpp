@@ -56,7 +56,10 @@ int startService(int argc, const char *argv[]) {
     controller api(dal);
     router route;
     route.support("/api/compute", methods::GET, [&api](const auto &req) {
-        api.compute(req);
+        api.compute_get(req);
+    });
+    route.support("/api/compute", methods::POST, [&api](const auto &req) {
+        api.compute_post(req);
     });
 
     http_listener listener(entry);

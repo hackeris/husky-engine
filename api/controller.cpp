@@ -19,7 +19,7 @@ value_holder controller::compute(const std::string &formula, const std::string &
     return gvm.evaluate(graph);
 }
 
-void controller::compute(const http_request &req) const {
+void controller::compute_get(const http_request &req) const {
 
     const auto &params = uri::split_query(req.request_uri().query());
     auto encoded_formula = get<std::string>(params, "formula");
@@ -34,6 +34,26 @@ void controller::compute(const http_request &req) const {
     auto_timer tmr("compute values of '" + formula + "' at " + date.value());
 
     auto result = compute(formula, date.value());
+    auto res = to_json(result);
+    req.reply(status_codes::OK, res);
+}
+
+void controller::compute_post(const http_request &req) const {
+
+    using concurrency::streams::stringstreambuf;
+
+    stringstreambuf buffer;
+    req.body().read_to_end(buffer).wait();
+    std::string content = buffer.collection();
+
+    json::value body = json::value::parse(content);
+
+    auto formula = body["formula"].as_string();
+    auto date = body["date"].as_string();
+
+    auto_timer tmr("compute values of '" + formula + "' at " + date);
+
+    auto result = compute(formula, date);
     auto res = to_json(result);
     req.reply(status_codes::OK, res);
 }
@@ -89,6 +109,8 @@ web::json::value to_json(const value_holder &holder) {
                 result["value"] = to_object<bool>(values);
             }
         }
+    } else if (holder.holds<vector_ref>()) {
+        return to_json(holder.get<vector_ref>().get(0));
     }
 
     return result;

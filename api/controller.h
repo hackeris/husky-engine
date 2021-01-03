@@ -26,7 +26,9 @@ class controller {
 public:
     explicit controller(std::shared_ptr<data_repository> dal) : dal(std::move(dal)) {}
 
-    void compute(const http_request &req) const;
+    void compute_get(const http_request &req) const;
+
+    void compute_post(const http_request &req) const;
 
 private:
     [[nodiscard]]
