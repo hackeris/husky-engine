@@ -2,8 +2,8 @@
 // Created by rainm on 2021/1/2.
 //
 
-#ifndef HUSKY_COMPUTE_RUNTIME_H
-#define HUSKY_COMPUTE_RUNTIME_H
+#ifndef HUSKY_ENGINE_RUNTIME_H
+#define HUSKY_ENGINE_RUNTIME_H
 
 #include <map>
 #include <string>
@@ -55,4 +55,4 @@ private:
 };
 
 
-#endif //HUSKY_COMPUTE_RUNTIME_H
+#endif //HUSKY_ENGINE_RUNTIME_H

@@ -2,8 +2,8 @@
 // Created by rainm on 2021/1/2.
 //
 
-#ifndef HUSKY_COMPUTE_GRAPHVM_H
-#define HUSKY_COMPUTE_GRAPHVM_H
+#ifndef HUSKY_ENGINE_GRAPHVM_H
+#define HUSKY_ENGINE_GRAPHVM_H
 
 #include <map>
 #include <string>
@@ -41,4 +41,4 @@ private:
 };
 
 
-#endif //HUSKY_COMPUTE_GRAPHVM_H
+#endif //HUSKY_ENGINE_GRAPHVM_H

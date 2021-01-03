@@ -2,8 +2,8 @@
 // Created by rainm on 2021/1/2.
 //
 
-#ifndef HUSKY_COMPUTE_DATAREPOSITORY_H
-#define HUSKY_COMPUTE_DATAREPOSITORY_H
+#ifndef HUSKY_ENGINE_DATAREPOSITORY_H
+#define HUSKY_ENGINE_DATAREPOSITORY_H
 
 #include <string>
 #include <vector>
@@ -84,4 +84,4 @@ private:
 };
 
 
-#endif //HUSKY_COMPUTE_DATAREPOSITORY_H
+#endif //HUSKY_ENGINE_DATAREPOSITORY_H
