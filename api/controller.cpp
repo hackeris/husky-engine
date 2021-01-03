@@ -22,7 +22,7 @@ value_holder controller::compute(const std::string &formula, const std::string &
 void controller::compute(const http_request &req) const {
 
     const auto &params = uri::split_query(req.request_uri().query());
-    auto encoded_formula = get<std::string>(params, "encoded_formula");
+    auto encoded_formula = get<std::string>(params, "formula");
     auto date = get<std::string>(params, "date");
     if (!(encoded_formula.has_value() && date.has_value())) {
         req.reply(status_codes::BadRequest);
