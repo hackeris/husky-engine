@@ -6,6 +6,7 @@
 #define HUSKY_ENGINE_GRAPH_H
 
 #include <any>
+#include <memory>
 #include <string>
 #include <utility>
 #include <variant>
@@ -131,15 +132,6 @@ public:
 };
 
 class atom : public node_base {
-private:
-    using child_type = std::variant<
-            literal,
-            identifier_ref,
-            function_call,
-            expression_ptr,
-            array_index
-    >;
-    child_type child;
 public:
 
     template<typename T>
@@ -154,16 +146,17 @@ public:
 
     template<typename C>
     explicit atom(C child_):child(child_) {}
+
+private:
+    std::variant<
+            literal,
+            identifier_ref,
+            function_call,
+            expression_ptr,
+            array_index> child;
 };
 
 class expression : public node_base {
-private:
-    using child_type = std::variant<
-            binary_op,
-            unary_op,
-            atom_ptr
-    >;
-    child_type child;
 public:
 
     template<typename T>
@@ -178,6 +171,12 @@ public:
 
     template<typename C>
     explicit expression(C child_):child(child_) {}
+
+private:
+    std::variant<
+            binary_op,
+            unary_op,
+            atom_ptr> child;
 };
 
 #endif //HUSKY_ENGINE_GRAPH_H
