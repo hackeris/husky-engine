@@ -331,12 +331,11 @@ public:
                        std::inserter(all_keys, all_keys.begin()));
 
         vector result;
-        auto &result_values = result.values;
         for (auto &it: all_keys) {
             if (left.contains(it) && right.contains(it)) {
                 auto left_ = left.get(it);
                 auto right_ = right.get(it);
-                result_values->emplace(it, op(left_.value(), right_.value()));
+                result.put(it, op(left_.value(), right_.value()));
             }
         }
         return result;
@@ -348,10 +347,9 @@ public:
         std::set<std::string> allKeys = operand.keys();
 
         vector result;
-        auto &result_values = result.values;
         for (auto &it: allKeys) {
             auto operand_ = operand.get(it);
-            result_values->emplace(it, op(operand_.value()));
+            result.put(it, op(operand_.value()));
         }
         return result;
     }
@@ -368,6 +366,10 @@ public:
     [[nodiscard]]
     inline bool contains(const std::string &label) const {
         return values->find(label) != values->end();
+    }
+
+    inline void put(std::string &&label, primitive &&value) {
+        values->emplace(label, value);
     }
 
     inline void put(const std::string &label, const primitive &value) {
@@ -388,16 +390,15 @@ public:
         return std::nullopt;
     }
 
-    friend class value_holder;
-
 private:
     std::shared_ptr<std::map<std::string, primitive>> values;
 };
 
 class vector_ref : public value_base {
 public:
-    vector_ref(std::function<vector(int)> getter) : getter(std::move(getter)) {}
+    explicit vector_ref(std::function<vector(int)> getter) : getter(std::move(getter)) {}
 
+    [[nodiscard]]
     inline vector get(int index) const {
         return getter(index);
     }
@@ -492,10 +493,9 @@ public:
             auto &right_ = right.get<primitive>();
 
             vector result;
-            auto &result_values = result.values;
             for (auto &it: left_.keys()) {
                 auto leftVal = left_.get(it);
-                result_values->emplace(it, op(leftVal.value(), right_));
+                result.put(it, op(leftVal.value(), right_));
             }
             return result;
         } else if (left.holds<primitive>() && right.holds<vector>()) {
@@ -504,10 +504,9 @@ public:
             auto &right_ = right.get<vector>();
 
             vector result;
-            auto &result_values = result.values;
             for (auto &it: right_.keys()) {
                 auto right_val = right_.get(it);
-                result_values->emplace(it, op(left_, right_val.value()));
+                result.put(it, op(left_, right_val.value()));
             }
             return result;
         } else if (left.holds<vector_ref>()) {
