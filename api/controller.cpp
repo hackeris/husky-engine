@@ -8,6 +8,7 @@
 #include "lang/graph_compiler.h"
 
 #include <cpprest/json.h>
+#include "util/timer.h"
 
 value_holder controller::compute(const std::string &formula, const std::string &date) const {
 
@@ -21,15 +22,18 @@ value_holder controller::compute(const std::string &formula, const std::string &
 void controller::compute(const http_request &req) const {
 
     const auto &params = uri::split_query(req.request_uri().query());
-    auto formula = get<std::string>(params, "formula");
+    auto encoded_formula = get<std::string>(params, "encoded_formula");
     auto date = get<std::string>(params, "date");
-    if (!(formula.has_value() && date.has_value())) {
+    if (!(encoded_formula.has_value() && date.has_value())) {
         req.reply(status_codes::BadRequest);
         return;
     }
 
-    auto result = compute(
-            from_base64(formula.value()), date.value());
+    auto formula = from_base64(encoded_formula.value());
+
+    auto_timer tmr("compute values of '" + formula + "' at " + date.value());
+
+    auto result = compute(formula, date.value());
     auto res = to_json(result);
     req.reply(status_codes::OK, res);
 }
