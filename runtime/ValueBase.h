@@ -414,7 +414,7 @@ public:
 
 public:
     template<typename T>
-    [[nodiscard]] inline bool hold() const {
+    [[nodiscard]] inline bool holds() const {
         const T *ptr = dynamic_cast<const T *>(valuePtr.get());
         return ptr != nullptr;
     }
@@ -482,11 +482,11 @@ public:
 
     template<class OpType>
     friend ValueHolder binaryOperator(const ValueHolder &left, const ValueHolder &right, OpType op) {
-        if (left.hold<PrimitiveValue>() && right.hold<PrimitiveValue>()) {
+        if (left.holds<PrimitiveValue>() && right.holds<PrimitiveValue>()) {
             return op(left.get<PrimitiveValue>(), right.get<PrimitiveValue>());
-        } else if (left.hold<Vector>() && right.hold<Vector>()) {
+        } else if (left.holds<Vector>() && right.holds<Vector>()) {
             return op(left.get<Vector>(), right.get<Vector>());
-        } else if (left.hold<Vector>() && right.hold<PrimitiveValue>()) {
+        } else if (left.holds<Vector>() && right.holds<PrimitiveValue>()) {
 
             auto &leftV = left.get<Vector>();
             auto &rightP = right.get<PrimitiveValue>();
@@ -498,7 +498,7 @@ public:
                 resultMap->emplace(it, op(leftVal.value(), rightP));
             }
             return result;
-        } else if (left.hold<PrimitiveValue>() && right.hold<Vector>()) {
+        } else if (left.holds<PrimitiveValue>() && right.holds<Vector>()) {
 
             auto &leftP = left.get<PrimitiveValue>();
             auto &rightV = right.get<Vector>();
@@ -510,10 +510,10 @@ public:
                 resultMap->emplace(it, op(leftP, rightValue.value()));
             }
             return result;
-        } else if (left.hold<VectorRef>()) {
+        } else if (left.holds<VectorRef>()) {
             const auto &ref = left.get<VectorRef>();
             return binaryOperator(ref.get(0), right, op);
-        } else if (right.hold<VectorRef>()) {
+        } else if (right.holds<VectorRef>()) {
             const auto &ref = right.get<VectorRef>();
             return binaryOperator(left, ref.get(0), op);
         }
@@ -522,11 +522,11 @@ public:
 
     template<class OpType>
     inline static ValueHolder unaryOperator(const ValueHolder &operand, OpType op) {
-        if (operand.hold<PrimitiveValue>()) {
+        if (operand.holds<PrimitiveValue>()) {
             return op(operand.get<PrimitiveValue>());
-        } else if (operand.hold<Vector>()) {
+        } else if (operand.holds<Vector>()) {
             return op(operand.get<Vector>());
-        } else if (operand.hold<VectorRef>()) {
+        } else if (operand.holds<VectorRef>()) {
             const auto &ref = operand.get<VectorRef>();
             return unaryOperator(ref.get(0), op);
         }
@@ -534,9 +534,9 @@ public:
     }
 
     inline Vector deRef() const {
-        if (hold<Vector>()) {
+        if (holds<Vector>()) {
             return get<Vector>();
-        } else if (hold<VectorRef>()) {
+        } else if (holds<VectorRef>()) {
             VectorRef ref = get<VectorRef>();
             return ref.get(0);
         }
@@ -546,5 +546,7 @@ public:
 private:
     std::shared_ptr<ValueBase> valuePtr;
 };
+
+std::string to_string(const ValueHolder &holder) ;
 
 #endif //HUSKY_COMPUTE_VALUEBASE_H

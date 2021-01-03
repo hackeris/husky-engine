@@ -69,7 +69,7 @@ ValueHolder avgT(const Runtime &runtime, const std::vector<ValueHolder> &args) {
     }
 
     auto refHolder = args[0];
-    if (!refHolder.hold<VectorRef>()) {
+    if (!refHolder.holds<VectorRef>()) {
         throw std::runtime_error("invalid arguments pass to avg_t");
     }
 
@@ -88,4 +88,21 @@ ValueHolder avgT(const Runtime &runtime, const std::vector<ValueHolder> &args) {
     }
 
     return ValueHolder(vec) / ValueHolder(PrimitiveValue(end - begin + 1));
+}
+
+ValueHolder dropFalse(const Runtime &runtime, const std::vector<ValueHolder> &args) {
+
+    auto sourceVec = args[0].deRef();
+
+    Vector vec;
+    const auto &values = sourceVec.getValues();
+    for (auto &pair:values) {
+        if (pair.second.holds<bool>()) {
+            if (!pair.second.get<bool>()) {
+                continue;
+            }
+        }
+        vec.put(pair.first, pair.second);
+    }
+    return vec;
 }

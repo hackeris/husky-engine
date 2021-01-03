@@ -1,14 +1,11 @@
 #include <iostream>
-#include <fstream>
 #include <string>
-#include <vector>
 #include "runtime/ValueBase.h"
 #include "runtime/GraphVM.h"
 
 #include "lang/GraphCompiler.h"
 
-#include <mysqlx/xdevapi.h>
-#include <dal/DataRepository.h>
+#include "dal/DataRepository.h"
 
 using ::std::cout;
 using ::std::endl;
@@ -19,7 +16,7 @@ using namespace antlrcpp;
 
 int testCompiler() {
 
-    std::string exp = "rank(roe, avg_t(roe, -2, 0) > 20) < 10";
+    std::string exp = "drop_false( rank(roe + roe[-1], avg_t(roe, -2, 0) > 20) < 10 )";
     std::string date = "2020-09-10";
 
     auto host = "192.168.10.102";
@@ -36,7 +33,7 @@ int testCompiler() {
     try {
         auto graph = GraphCompiler::compile(exp);
         ValueHolder value = gvm.evaluate(graph);
-        std::cout << value.hold<Vector>() << std::endl;
+        std::cout << to_string(value) << std::endl;
     } catch (const std::runtime_error &error) {
         std::cout << error.what() << std::endl;
     }

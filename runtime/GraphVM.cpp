@@ -126,7 +126,7 @@ ValueHolder GraphVM::evaluate(const ArrayIndex &arrayIndex) {
     auto &identifier = arrayIndex.identifier;
 
     auto indexHolder = evaluate(arrayIndex.index);
-    assert(indexHolder.hold<PrimitiveValue>());
+    assert(indexHolder.holds<PrimitiveValue>());
     const auto &indexValue = indexHolder.get<PrimitiveValue>();
     assert(indexValue.holds<int>());
 

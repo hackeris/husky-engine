@@ -16,6 +16,7 @@ Runtime::Runtime(std::string date,
     functions.emplace("rank", rank);
     functions.emplace("avail", avail);
     functions.emplace("avg_t", avgT);
+    functions.emplace("drop_false", dropFalse);
 }
 
 bool Runtime::hasFunction(const std::string &name) const {

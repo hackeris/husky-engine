@@ -15,4 +15,6 @@ ValueHolder avail(const Runtime &runtime, const std::vector<ValueHolder> &args);
 
 ValueHolder avgT(const Runtime &runtime, const std::vector<ValueHolder> &args);
 
+ValueHolder dropFalse(const Runtime &runtime, const std::vector<ValueHolder> &args);
+
 #endif //HUSKY_COMPUTE_FUNCTION_H

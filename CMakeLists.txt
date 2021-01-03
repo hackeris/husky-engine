@@ -14,7 +14,9 @@ add_executable(husky_engine
         lang/Graph.h
         runtime/GraphVM.cpp
         runtime/GraphVM.h
-        runtime/ValueBase.h runtime/Runtime.cpp runtime/Runtime.h dal/DataRepository.cpp dal/DataRepository.h runtime/lib/Function.h
+        runtime/ValueBase.h
+        runtime/ValueBase.cpp
+        runtime/Runtime.cpp runtime/Runtime.h dal/DataRepository.cpp dal/DataRepository.h runtime/lib/Function.h
         runtime/lib/Function.cpp)
 
 find_package(cpprestsdk REQUIRED)

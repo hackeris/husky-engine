@@ -174,7 +174,7 @@ DataRepository::getFormulaValues(const std::string &formula, const std::string &
     GraphVM vm(runtime);
 
     ValueHolder value = vm.evaluate(expression);
-    if (!value.hold<Vector>()) {
+    if (!value.holds<Vector>()) {
         return std::map<std::string, float>();
     }
 
