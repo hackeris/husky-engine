@@ -2,6 +2,7 @@
 #include <string>
 #include <thread>
 #include <chrono>
+#include <csignal>
 
 #include "dal/data_repository.h"
 
@@ -9,6 +10,13 @@
 #include "api/controller.h"
 
 using namespace ::mysqlx;
+
+std::function<void(void)> signal_handler;
+
+void sig_int_handler(int) {
+    std::cout << "on SIGINT" << std::endl;
+    signal_handler();
+}
 
 /**
  *
@@ -65,13 +73,19 @@ int startService(int argc, const char *argv[]) {
     http_listener listener(entry);
     listener.support(route);
 
+    volatile bool running = true;
+    signal_handler = [&listener, &running] {
+        listener.close().wait();
+        running = false;
+    };
+    signal(SIGINT, sig_int_handler);
+
     try {
         listener.open().wait();
-        while (true) {
-            std::this_thread::sleep_for(std::chrono::seconds(10));
+        while (running) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
         }
-    }
-    catch (std::exception const &e) {
+    } catch (std::exception const &e) {
         std::cout << e.what() << std::endl;
     }
 
