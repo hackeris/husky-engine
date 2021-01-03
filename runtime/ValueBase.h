@@ -547,6 +547,5 @@ private:
     std::shared_ptr<ValueBase> valuePtr;
 };
 
-std::string to_string(const ValueHolder &holder) ;
 
 #endif //HUSKY_COMPUTE_VALUEBASE_H

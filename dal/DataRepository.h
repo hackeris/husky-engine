@@ -18,6 +18,7 @@ using ::mysqlx::Row;
 using ::mysqlx::Value;
 using ::mysqlx::bytes;
 using ::mysqlx::SqlResult;
+using ::mysqlx::Client;
 
 enum FactorType {
     Market,
@@ -48,10 +49,7 @@ public:
 
 class DataRepository {
 public:
-    DataRepository(const std::string &host, int port,
-                   const std::string &user, const std::string &password, const std::string &database);
-
-    std::vector<std::string> getDates();
+    DataRepository(std::shared_ptr<Client> client);
 
     bool factorExists(const std::string &code);
 
@@ -62,24 +60,27 @@ public:
 
 private:
 
-    Factor getFactor(const std::string &code);
+    std::vector<std::string> getDates(Session &sess);
+
+    std::vector<std::string> getSymbols(Session &sess, const std::string &date);
+
+    Factor getFactor(Session& sess, const std::string &code);
 
     std::map<std::string, float> makeValues(const std::list<Row> &rows);
 
     std::map<std::string, float> getMarketValues(
-            int id, const std::string &date, int offset);
+            Session& sess, int id, const std::string &date, int offset);
 
     std::map<std::string, float> getFinancialValues(
-            int id, const std::string &date, int offset);
+            Session& sess, int id, const std::string &date, int offset);
 
     std::map<std::string, float> getFormulaValues(
-            const std::string &formula, const std::string &date, int offset);
+            Session &sess, const std::string &formula, const std::string &date, int offset);
 
-    std::string getDate(const std::string &base, int offset);
+    std::string getDate(Session &sess, const std::string &base, int offset);
 
 private:
-    std::shared_ptr<Session> session;
-    std::shared_ptr<Schema> schema;
+    std::shared_ptr<Client> client;
 };
 
 

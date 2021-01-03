@@ -17,18 +17,21 @@ add_executable(husky_engine
         runtime/ValueBase.h
         runtime/ValueBase.cpp
         runtime/Runtime.cpp runtime/Runtime.h dal/DataRepository.cpp dal/DataRepository.h runtime/lib/Function.h
-        runtime/lib/Function.cpp)
+        runtime/lib/Function.cpp api/Controller.cpp api/Controller.h api/Router.cpp api/Router.h)
 
 find_package(cpprestsdk REQUIRED)
 find_package(OpenSSL REQUIRED)
 
 target_include_directories(husky_engine PUBLIC
         /usr/local/include/antlr4-runtime
+        /usr/local/opt/openssl/include
         /usr/local/opt/mysql-connector-c++/include)
 target_link_directories(husky_engine PUBLIC
         /usr/local/lib
+        /usr/local/opt/openssl/lib
         /usr/local/opt/mysql-connector-c++/lib)
 target_link_libraries(husky_engine
         antlr4-runtime
+        ssl crypto
         cpprestsdk::cpprest
         mysqlcppconn8)
