@@ -8,7 +8,7 @@
   "client": {
     "pooling": {
       "enabled": true,
-      "maxSize": 25,
+      "maxSize": 2,
       "queueTimeout": 1000,
       "maxIdleTime": 5000
     }

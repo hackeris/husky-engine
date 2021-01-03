@@ -59,6 +59,8 @@ std::map<std::string, float> data_repository::get_factor_values(
         return get_formula_values(sess, factor_.formula, date, offset);
     }
 
+    sess.close();
+
     throw std::runtime_error("unsupported factor_ type");
 }
 
@@ -97,7 +99,9 @@ data_repository::get_financial_values(Session &sess, int id, const std::string &
 std::vector<std::string> data_repository::get_symbols(const std::string &date) {
 
     Session sess = client->getSession();
-    return get_symbols(sess, date);
+    auto symbols = get_symbols(sess, date);
+    sess.close();
+    return symbols;
 }
 
 std::map<std::string, float> data_repository::make_values(const std::list<Row> &rows) {
@@ -117,6 +121,7 @@ std::map<std::string, float> data_repository::make_values(const std::list<Row> &
 bool data_repository::factor_exists(const std::string &code) {
     Session sess = client->getSession();
     auto factor_ = get_factor(sess, code);
+    sess.close();
     return factor_.id > 0;
 }
 
