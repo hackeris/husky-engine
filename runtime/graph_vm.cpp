@@ -2,6 +2,7 @@
 // Created by rainm on 2021/1/2.
 //
 
+#include "value_base.h"
 #include "graph_vm.h"
 
 #include <utility>
@@ -123,14 +124,14 @@ value_holder graph_vm::evaluate(const function_call &call) {
 
 value_holder graph_vm::evaluate(const array_index &expr) {
 
-    auto &identifier = expr.identifier;
+    const identifier_ref &identifier = expr.identifier;
 
-    auto indexHolder = evaluate(expr.index);
-    assert(indexHolder.holds<primitive>());
-    const auto &indexValue = indexHolder.get<primitive>();
-    assert(indexValue.holds<int>());
+    value_holder holder = evaluate(expr.index);
+    assert(holder.holds<primitive>());
+    auto &value = holder.get<primitive>();
+    assert(value.holds<int>());
 
-    int index = indexValue.get<int>();
+    int index = value.get<int>();
 
     return p_rt->evaluate(identifier, index);
 }
