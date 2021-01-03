@@ -2,54 +2,64 @@
 #include <string>
 #include <thread>
 #include <chrono>
-#include "api/controller.h"
-#include "runtime/value_base.h"
 
 #include "dal/data_repository.h"
-#include "api/router.h"
 
-using ::std::cout;
-using ::std::endl;
+#include "api/router.h"
+#include "api/controller.h"
+
 using namespace ::mysqlx;
 
-std::optional<int> parse_port(int argc, const char *argv[]) {
-
-    if (argc >= 2) {
-        return std::make_optional(
-                std::strtol(argv[1], nullptr, 10));
+/**
+ *
+  "client": {
+     "pooling": {
+        "enabled": true,
+        "maxSize": 25,
+        "queueTimeout": 1000,
+        "maxIdleTime": 5000
+      }
     }
-    return std::nullopt;
-}
-
+ *
+ */
 int startService(int argc, const char *argv[]) {
 
-    std::optional<int> maybe_port = parse_port(argc, argv);
-    int port = maybe_port.value_or(8081);
-    auto entry = "http://localhost:" + std::to_string(port);
-    std::cout << "Will listen at: " << entry << std::endl;
+    std::string config_file = "config.json";
+    if (argc > 1) {
+        config_file = argv[1];
+    }
 
-    auto host = "192.168.10.102";
-    auto db_port = 3306;
-    auto user = "root";
-    auto pass = "toor";
-    auto database = "husky_v2";
+    std::ifstream in(config_file);
+    std::string config_json((std::istreambuf_iterator<char>(in)),
+                            std::istreambuf_iterator<char>());
+
+    std::istringstream iss(config_json);
+    json::value config = json::value::parse(iss);
+
+    auto host = config["host"].as_string();
+    auto db_port = config["port"].as_integer();
+    auto user = config["user"].as_string();
+    auto pass = config["password"].as_string();
+    auto database = config["database"].as_string();
+    auto entry = config["entry"].as_string();
+    auto client_config = config["client"].serialize();
+
+    std::cout << "Will listen at: " << entry << std::endl;
+    std::cout << "Use database from " << host << ":" << db_port << ", database: " << database << std::endl;
+
+    std::string uri = user + ":" + pass + "@" + host + ":"
+                      + std::to_string(db_port * 10) + "/" + database;
     auto client = std::make_shared<Client>(
-            "root:toor@192.168.10.102/husky_v2", DbDoc("    { \"pooling\": {\n"
-                                                       "        \"enabled\": true,\n"
-                                                       "        \"maxSize\": 25,\n"
-                                                       "        \"queueTimeout\": 1000,\n"
-                                                       "        \"maxIdleTime\": 5000}\n"
-                                                       "    }"));
+            uri, DbDoc(client_config));
     auto dal = std::make_shared<data_repository>(client);
 
     controller api(dal);
-
-    http_listener listener(entry);
     router route;
-
     route.support("/api/compute", methods::GET, [&api](const auto &req) {
         api.compute(req);
     });
+
+    http_listener listener(entry);
     listener.support(route);
 
     try {

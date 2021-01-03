@@ -15,6 +15,8 @@ value_holder avail(const runtime &rt, const std::vector<value_holder> &args);
 
 value_holder avg_t(const runtime &rt, const std::vector<value_holder> &args);
 
+value_holder std_t(const runtime &rt, const std::vector<value_holder> &args);
+
 value_holder drop_false(const runtime &rt, const std::vector<value_holder> &args);
 
 #endif //HUSKY_ENGINE_FUNCTION_H

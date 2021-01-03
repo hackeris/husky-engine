@@ -16,6 +16,7 @@ runtime::runtime(std::string date,
     functions.emplace("rank", rank);
     functions.emplace("avail", avail);
     functions.emplace("avg_t", avg_t);
+    functions.emplace("std_t", std_t);
     functions.emplace("drop_false", drop_false);
 }
 

@@ -68,26 +68,72 @@ value_holder avg_t(const runtime &rt, const std::vector<value_holder> &args) {
         throw std::runtime_error("invalid arguments pass to avg_t");
     }
 
-    auto refHolder = args[0];
-    if (!refHolder.holds<vector_ref>()) {
+    auto maybe_ref = args[0];
+    if (!maybe_ref.holds<vector_ref>()) {
         throw std::runtime_error("invalid arguments pass to avg_t");
     }
 
-    const auto &ref = refHolder.get<vector_ref>();
+    const auto &ref = maybe_ref.get<vector_ref>();
 
     int begin = args[1].get<primitive>().get<int>();
     int end = args[2].get<primitive>().get<int>();
 
-    vector vec;
+    vector sum;
     for (int i = begin; i <= end; i++) {
         if (i == begin) {
-            vec = ref.get(i);
+            sum = ref.get(i);
         } else {
-            vec = vec + ref.get(i);
+            sum = sum + ref.get(i);
         }
     }
 
-    return value_holder(vec) / value_holder(primitive(end - begin + 1));
+    return value_holder(sum) / value_holder(primitive(end - begin + 1));
+}
+
+value_holder std_t(const runtime &rt, const std::vector<value_holder> &args) {
+
+    if (args.size() != 3) {
+        throw std::runtime_error("invalid arguments pass to avg_t");
+    }
+
+    auto maybe_ref = args[0];
+    if (!maybe_ref.holds<vector_ref>()) {
+        throw std::runtime_error("invalid arguments pass to avg_t");
+    }
+
+    const auto &ref = maybe_ref.get<vector_ref>();
+
+    int begin = args[1].get<primitive>().get<int>();
+    int end = args[2].get<primitive>().get<int>();
+
+    std::vector<vector> frames;
+    for (int i = begin; i <= end; i++) {
+        frames.emplace_back(ref.get(i));
+    }
+
+    vector sum;
+    for (int i = 0; i < frames.size(); i++) {
+        if (i == 0) {
+            sum = frames[i];
+        } else {
+            sum = sum + frames[i];
+        }
+    }
+
+    float n = (float) end - (float) begin + 1.0f;
+    auto avg = (value_holder(sum) / value_holder(primitive(n))).get<vector>();
+
+    vector ss;
+    for (int i = 0; i < frames.size(); i++) {
+        vector it = frames[i] - avg;
+        if (i == 0) {
+            ss = it * it;
+        } else {
+            ss = ss + it * it;
+        }
+    }
+
+    return value_holder(ss) / value_holder(primitive(n - 1));
 }
 
 value_holder drop_false(const runtime &rt, const std::vector<value_holder> &args) {

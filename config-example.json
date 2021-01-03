@@ -1,0 +1,16 @@
+{
+  "host": "192.168.10.102",
+  "port": 3306,
+  "user": "root",
+  "password": "toor",
+  "database": "husky_v2",
+  "entry": "http://localhost:8080",
+  "client": {
+    "pooling": {
+      "enabled": true,
+      "maxSize": 25,
+      "queueTimeout": 1000,
+      "maxIdleTime": 5000
+    }
+  }
+}
