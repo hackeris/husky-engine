@@ -8,9 +8,13 @@
 #include <set>
 #include <map>
 #include <string>
+#include <memory>
+#include <functional>
 #include <optional>
 #include <utility>
 #include <variant>
+
+#include <cmath>
 
 namespace ops {
     struct add {
@@ -203,9 +207,9 @@ public:
         if (left.holds<int>() && right.holds<int>()) {
             return primitive((int) round(pow(left.get<int>(), right.get<int>())));
         } else if (left.holds<float>() || right.holds<float>()) {
-            auto leftVal = left.holds<float>() ? left.get<float>() : (float) left.get<int>();
-            auto rightVal = right.holds<float>() ? right.get<float>() : (float) right.get<int>();
-            return primitive(pow(leftVal, rightVal));
+            float left_ = left.holds<float>() ? left.get<float>() : (float) left.get<int>();
+            float right_ = right.holds<float>() ? right.get<float>() : (float) right.get<int>();
+            return primitive((float) pow(left_, right_));
         }
         throw std::runtime_error("unexpected type on operator");
     }
