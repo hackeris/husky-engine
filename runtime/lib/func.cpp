@@ -7,8 +7,8 @@
 
 value_holder rank(const runtime &rt, const std::vector<value_holder> &args) {
 
-    auto vectorToRank = args[0].de_ref();
-    auto &vec_values = vectorToRank.get_values();
+    auto to_rank = args[0].de_ref();
+    auto &vec_values = to_rank.get_values();
 
     std::vector<std::pair<std::string, primitive>> values;
     if (args.size() > 1) {
