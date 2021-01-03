@@ -6,18 +6,18 @@
 #include <algorithm>
 #include <numeric>
 #include <utility>
-#include "DataRepository.h"
+#include "data_repository.h"
 
-#include "lang/GraphCompiler.h"
-#include "runtime/Runtime.h"
-#include "runtime/GraphVM.h"
+#include "lang/graph_compiler.h"
+#include "runtime/runtime.h"
+#include "runtime/graph_vm.h"
 
 
-DataRepository::DataRepository(std::shared_ptr<Client> client)
+data_repository::data_repository(std::shared_ptr<Client> client)
         : client(std::move(client)) {
 }
 
-std::vector<std::string> DataRepository::getDates(Session &sess) {
+std::vector<std::string> data_repository::get_dates(Session &sess) {
 
     Schema schema = sess.getDefaultSchema();
 
@@ -37,29 +37,29 @@ std::vector<std::string> DataRepository::getDates(Session &sess) {
     return dates;
 }
 
-std::map<std::string, float> DataRepository::getFactorValues(
+std::map<std::string, float> data_repository::get_factor_values(
         const std::string &code, const std::string &date, int offset) {
 
     Session sess = client->getSession();
 
-    auto factor = getFactor(sess, code);
-    if (factor.id <= 0) {
+    auto factor_ = get_factor(sess, code);
+    if (factor_.id <= 0) {
         return std::map<std::string, float>();
     }
 
-    if (factor.type == FactorType::Market) {
-        return getMarketValues(sess, factor.id, date, offset);
-    } else if (factor.type == FactorType::Financial) {
-        return getFinancialValues(sess, factor.id, date, offset);
-    } else if (factor.type == FactorType::Formula) {
-        return getFormulaValues(sess, factor.formula, date, offset);
+    if (factor_.type == factor_type::market) {
+        return get_market_values(sess, factor_.id, date, offset);
+    } else if (factor_.type == factor_type::financial) {
+        return get_financial_values(sess, factor_.id, date, offset);
+    } else if (factor_.type == factor_type::formula) {
+        return get_formula_values(sess, factor_.formula, date, offset);
     }
 
-    throw std::runtime_error("unsupported factor type");
+    throw std::runtime_error("unsupported factor_ type");
 }
 
 std::map<std::string, float>
-DataRepository::getFinancialValues(Session &sess, int id, const std::string &date, int offset) {
+data_repository::get_financial_values(Session &sess, int id, const std::string &date, int offset) {
 
     std::string sqlFormat = "("
                             "SELECT `symbol`,`value` FROM financial_factor_data "
@@ -69,7 +69,7 @@ DataRepository::getFinancialValues(Session &sess, int id, const std::string &dat
                             " ORDER BY date DESC LIMIT %d, 1"
                             ")";
 
-    const auto &symbols = getSymbols(sess, date);
+    const auto &symbols = get_symbols(sess, date);
     std::vector<std::string> rowSqls;
     std::transform(symbols.begin(), symbols.end(),
                    std::back_inserter(rowSqls),
@@ -87,16 +87,16 @@ DataRepository::getFinancialValues(Session &sess, int id, const std::string &dat
 
     SqlResult result = sess.sql(sql)
             .execute();
-    return makeValues(result.fetchAll());
+    return make_values(result.fetchAll());
 }
 
-std::vector<std::string> DataRepository::getSymbols(const std::string &date) {
+std::vector<std::string> data_repository::get_symbols(const std::string &date) {
 
     Session sess = client->getSession();
-    return getSymbols(sess, date);
+    return get_symbols(sess, date);
 }
 
-std::map<std::string, float> DataRepository::makeValues(const std::list<Row> &rows) {
+std::map<std::string, float> data_repository::make_values(const std::list<Row> &rows) {
 
     std::map<std::string, float> values;
     for (auto &row : rows) {
@@ -110,13 +110,13 @@ std::map<std::string, float> DataRepository::makeValues(const std::list<Row> &ro
     return values;
 }
 
-bool DataRepository::factorExists(const std::string &code) {
+bool data_repository::factor_exists(const std::string &code) {
     Session sess = client->getSession();
-    auto factor = getFactor(sess, code);
-    return factor.id > 0;
+    auto factor_ = get_factor(sess, code);
+    return factor_.id > 0;
 }
 
-Factor DataRepository::getFactor(Session &sess, const std::string &code) {
+factor data_repository::get_factor(Session &sess, const std::string &code) {
 
     Schema schema = sess.getDefaultSchema();
     Table table = schema.getTable("factor");
@@ -126,26 +126,26 @@ Factor DataRepository::getFactor(Session &sess, const std::string &code) {
             .execute();
     Row row = result.fetchOne();
     if (row.isNull()) {
-        return Factor{0};
+        return factor{0};
     }
 
     int id = row[0].get<int>();
     std::string formula;
-    auto formulaCol = row[2];
-    if (!formulaCol.isNull()) {
-        formula = formulaCol.get<std::string>();
+    auto formula_col = row[2];
+    if (!formula_col.isNull()) {
+        formula = formula_col.get<std::string>();
     }
     int typeCode = row[3].get<int>();
-    FactorType type = Factor::typeOf(typeCode);
+    factor_type type = factor::type_of(typeCode);
 
-    return Factor{id, code, type, formula};
+    return factor{id, code, type, formula};
 }
 
-std::map<std::string, float> DataRepository::getMarketValues(
+std::map<std::string, float> data_repository::get_market_values(
         Session &sess, int id, const std::string &date, int offset) {
 
-    const std::string &exactDate = getDate(sess, date, offset);
-    if (exactDate.empty()) {
+    const std::string &date_ = get_date(sess, date, offset);
+    if (date_.empty()) {
         return std::map<std::string, float>();
     }
 
@@ -154,31 +154,31 @@ std::map<std::string, float> DataRepository::getMarketValues(
     RowResult result = table.select("symbol", "value")
             .where("id = :id and date = :date")
             .bind("id", std::to_string(id))
-            .bind("date", exactDate)
+            .bind("date", date_)
             .execute();
-    return makeValues(result.fetchAll());
+    return make_values(result.fetchAll());
 }
 
 std::map<std::string, float>
-DataRepository::getFormulaValues(
+data_repository::get_formula_values(
         Session &sess, const std::string &formula, const std::string &date, int offset) {
 
-    const std::string &exactDate = getDate(sess, date, offset);
-    if (exactDate.empty()) {
+    const std::string &date_ = get_date(sess, date, offset);
+    if (date_.empty()) {
         return std::map<std::string, float>();
     }
 
-    auto expression = GraphCompiler::compile(formula);
-    auto runtime = std::make_shared<Runtime>(
-            exactDate, std::make_shared<DataRepository>(*this));
-    GraphVM vm(runtime);
+    auto expr = graph_compiler::compile(formula);
+    auto rt = std::make_shared<runtime>(
+            date_, std::make_shared<data_repository>(*this));
+    graph_vm vm(rt);
 
-    ValueHolder value = vm.evaluate(expression);
-    if (!value.holds<Vector>()) {
+    value_holder value = vm.evaluate(expr);
+    if (!value.holds<vector>()) {
         return std::map<std::string, float>();
     }
 
-    Vector vec = value.get<Vector>();
+    vector vec = value.get<vector>();
     const std::set<std::string> &keys = vec.keys();
     std::map<std::string, float> values;
     std::transform(keys.begin(), keys.end(),
@@ -191,9 +191,9 @@ DataRepository::getFormulaValues(
     return values;
 }
 
-std::string DataRepository::getDate(Session &sess, const std::string &base, int offset) {
+std::string data_repository::get_date(Session &sess, const std::string &base, int offset) {
 
-    const std::vector<std::string> &dates = getDates(sess);
+    const std::vector<std::string> &dates = get_dates(sess);
     auto pos = std::find(dates.begin(), dates.end(), base) - dates.begin();
     auto exactPos = pos + offset;
     if (exactPos >= dates.size() || exactPos < 0) {
@@ -202,10 +202,10 @@ std::string DataRepository::getDate(Session &sess, const std::string &base, int 
     return dates[pos + offset];
 }
 
-std::vector<std::string> DataRepository::getSymbols(Session &sess, const std::string &date) {
+std::vector<std::string> data_repository::get_symbols(Session &sess, const std::string &date) {
 
-    const auto &factor = getFactor(sess, "close_price_backward");
-    const auto &values = getMarketValues(sess, factor.id, date, 0);
+    const auto &factor_ = get_factor(sess, "close_price_backward");
+    const auto &values = get_market_values(sess, factor_.id, date, 0);
 
     std::vector<std::string> symbols;
     std::transform(values.begin(), values.end(),

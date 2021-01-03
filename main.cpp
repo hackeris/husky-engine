@@ -2,11 +2,11 @@
 #include <string>
 #include <thread>
 #include <chrono>
-#include "api/Controller.h"
-#include "runtime/ValueBase.h"
+#include "api/controller.h"
+#include "runtime/value_base.h"
 
-#include "dal/DataRepository.h"
-#include "api/Router.h"
+#include "dal/data_repository.h"
+#include "api/router.h"
 
 using ::std::cout;
 using ::std::endl;
@@ -40,9 +40,9 @@ int startService(int argc, const char *argv[]) {
                                                        "        \"queueTimeout\": 1000,\n"
                                                        "        \"maxIdleTime\": 5000}\n"
                                                        "    }"));
-    auto dal = std::make_shared<DataRepository>(client);
+    auto dal = std::make_shared<data_repository>(client);
 
-    Controller api(dal);
+    controller api(dal);
 
     http_listener listener(entry);
     router route;

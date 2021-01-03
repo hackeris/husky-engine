@@ -5,10 +5,10 @@
 #ifndef HUSKY_COMPUTE_GRAPHCOMPILER_H
 #define HUSKY_COMPUTE_GRAPHCOMPILER_H
 
-#include "lang/Graph.h"
+#include "lang/graph.h"
 #include "grammar/HuskyLangVisitor.h"
 
-class GraphCompiler : public HuskyLangVisitor {
+class graph_compiler : public HuskyLangVisitor {
 
 public:
     antlrcpp::Any visitToExpression(HuskyLangParser::ToExpressionContext *context) override;
@@ -61,16 +61,16 @@ public:
 
     antlrcpp::Any visitInt(HuskyLangParser::IntContext *context) override;
 
-    static ExpressionPtr compile(const std::string &formula);
+    static expression_ptr compile(const std::string &formula);
 
 private:
-    static ExpressionPtr toExpression(const antlrcpp::Any &any);
+    static expression_ptr wrap_expression(const antlrcpp::Any &any);
 
-    static AtomPtr toAtom(const antlrcpp::Any &any);
+    static atom_ptr wrap_atom(const antlrcpp::Any &any);
 
-    static BinaryOp::Type getBinaryOp(const std::string &opText);
+    static binary_op::op_type get_binary_op(const std::string &op);
 
-    static UnaryOp::Type getUnaryOp(const std::string &opText);
+    static unary_op::op_type get_unary_op(const std::string &op);
 };
 
 

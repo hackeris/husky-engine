@@ -11,28 +11,26 @@
 #include <variant>
 #include <vector>
 
-class Node {
+class node_base {
 public:
-    virtual ~Node() = default;
+    virtual ~node_base() = default;
 };
 
-class Literal : public Node {
+class literal : public node_base {
 public:
 
-    enum LiteralType {
-        Integer,
-        Float
+    enum literal_type {
+        int_value,
+        float_value
     };
 
-    using Type = LiteralType;
-
 public:
-    explicit Literal(int value) : type(Type::Integer), value(value) {}
+    explicit literal(int value) : type(literal_type::int_value), value(value) {}
 
-    explicit Literal(float value) : type(Type::Float), value(value) {}
+    explicit literal(float value) : type(literal_type::float_value), value(value) {}
 
     [[nodiscard]]
-    bool is(const Type &t) const { return this->type == t; }
+    bool is(const literal_type &t) const { return this->type == t; }
 
     template<typename ValueType>
     [[nodiscard]]
@@ -41,16 +39,16 @@ public:
     }
 
 private:
-    LiteralType type;
+    literal_type type;
     std::variant<int, float> value;
 };
 
-class IdentifierRef : public Node {
+class identifier_ref : public node_base {
 public:
-    explicit IdentifierRef(std::string &&name) : name(name) {}
+    explicit identifier_ref(std::string &&name) : name(name) {}
 
     [[nodiscard]]
-    const std::string &getName() const {
+    const std::string &get_name() const {
         return name;
     }
 
@@ -58,90 +56,90 @@ private:
     std::string name;
 };
 
-class Atom;
+class atom;
 
-class Expression;
+class expression;
 
-using AtomPtr = std::shared_ptr<Atom>;
+using atom_ptr = std::shared_ptr<atom>;
 
-using ExpressionPtr = std::shared_ptr<Expression>;
+using expression_ptr = std::shared_ptr<expression>;
 
-class BinaryOp : public Node {
+class binary_op : public node_base {
 public:
-    enum Type {
-        Add,
-        Sub,
-        Multi,
-        Div,
-        And,
-        Or,
-        Equal,
-        NotEqual,
-        Greater,
-        Lower,
-        GreaterOrEqual,
-        LowerOrEqual,
-        Power
+    enum op_type {
+        op_add,
+        op_sub,
+        op_multi,
+        op_div,
+        op_and,
+        op_or,
+        op_equal,
+        op_not_equal,
+        op_greater,
+        op_lower,
+        op_greater_or_equal,
+        op_lower_or_equal,
+        op_power
     };
 public:
-    BinaryOp(Type op, ExpressionPtr left, ExpressionPtr right)
+    binary_op(op_type op, expression_ptr left, expression_ptr right)
             : op(op), left(std::move(left)), right(std::move(right)) {}
 
 public:
-    Type op;
-    ExpressionPtr left;
-    ExpressionPtr right;
+    op_type op;
+    expression_ptr left;
+    expression_ptr right;
 };
 
-using UnaryOperand = std::variant<BinaryOp, AtomPtr>;
+using unary_operand = std::variant<binary_op, atom_ptr>;
 
-class UnaryOp : public Node {
+class unary_op : public node_base {
 public:
-    enum Type {
-        Minus,
-        Not
+    enum op_type {
+        op_minus,
+        op_not
     };
 public:
-    template<typename OperandType>
-    UnaryOp(Type op, OperandType operand) : op(op), operand(std::move(operand)) {}
+    template<typename operand_type>
+    unary_op(op_type op, operand_type operand) : op(op), operand(std::move(operand)) {}
 
 public:
-    Type op;
-    UnaryOperand operand;
+    op_type op;
+    unary_operand operand;
 };
 
-using ArgList = std::shared_ptr<std::vector<ExpressionPtr>>;
+using arg_list = std::shared_ptr<std::vector<expression_ptr>>;
 
-class FunctionCall : public Node {
+class function_call : public node_base {
 public:
-    explicit FunctionCall(std::string &&name, ArgList argList)
+    explicit function_call(std::string &&name, arg_list argList)
             : func(std::forward<std::string>(name)), args(std::move(argList)) {}
 
 public:
-    IdentifierRef func;
-    ArgList args;
+    identifier_ref func;
+    arg_list args;
 };
 
-class ArrayIndex : public Node {
+class array_index : public node_base {
 public:
-    explicit ArrayIndex(IdentifierRef ident, ExpressionPtr idx)
+    explicit array_index(identifier_ref ident, expression_ptr idx)
             : identifier(std::move(ident)), index(std::move(idx)) {}
 
 public:
-    IdentifierRef identifier;
-    ExpressionPtr index;
+    identifier_ref identifier;
+    expression_ptr index;
 };
 
-class Atom : public Node {
+class atom : public node_base {
 private:
-    using ChildType = std::variant<
-            Literal,
-            IdentifierRef,
-            FunctionCall,
-            ExpressionPtr,
-            ArrayIndex
+    using child_type = std::variant<
+            literal,
+            identifier_ref,
+            function_call,
+            expression_ptr,
+            array_index
     >;
-    ChildType child;
+    child_type child;
 public:
 
     template<typename T>
@@ -154,18 +152,18 @@ public:
         return std::get<T>(child);
     }
 
-    template<typename Child>
-    explicit Atom(Child child_):child(child_) {}
+    template<typename C>
+    explicit atom(C child_):child(child_) {}
 };
 
-class Expression : public Node {
+class expression : public node_base {
 private:
-    using ChildType = std::variant<
-            BinaryOp,
-            UnaryOp,
-            AtomPtr
+    using child_type = std::variant<
+            binary_op,
+            unary_op,
+            atom_ptr
     >;
-    ChildType child;
+    child_type child;
 public:
 
     template<typename T>
@@ -178,8 +176,8 @@ public:
         return std::get<T>(child);
     }
 
-    template<typename Child>
-    explicit Expression(Child child_):child(child_) {}
+    template<typename C>
+    explicit expression(C child_):child(child_) {}
 };
 
 #endif //HUSKY_COMPUTE_GRAPH_H

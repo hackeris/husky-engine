@@ -2,23 +2,23 @@
 // Created by rainm on 2021/1/3.
 //
 
-#include "Controller.h"
-#include "runtime/Runtime.h"
-#include "runtime/GraphVM.h"
-#include "lang/GraphCompiler.h"
+#include "controller.h"
+#include "runtime/runtime.h"
+#include "runtime/graph_vm.h"
+#include "lang/graph_compiler.h"
 
 #include <cpprest/json.h>
 
-ValueHolder Controller::compute(const std::string &formula, const std::string &date) const {
+value_holder controller::compute(const std::string &formula, const std::string &date) const {
 
-    auto rt = std::make_shared<Runtime>(date, dal);
-    auto graph = GraphCompiler::compile(formula);
+    auto rt = std::make_shared<runtime>(date, dal);
+    auto graph = graph_compiler::compile(formula);
 
-    GraphVM gvm(rt);
+    graph_vm gvm(rt);
     return gvm.evaluate(graph);
 }
 
-void Controller::compute(const http_request &req) const {
+void controller::compute(const http_request &req) const {
 
     const auto &params = uri::split_query(req.request_uri().query());
     auto formula = get<std::string>(params, "formula");
@@ -35,7 +35,7 @@ void Controller::compute(const http_request &req) const {
 }
 
 template<typename T>
-web::json::value to_object(const std::map<std::string, PrimitiveValue> &values) {
+web::json::value to_object(const std::map<std::string, primitive> &values) {
     using namespace web;
     json::value result = json::value::object();
     for (auto &pair: values) {
@@ -45,7 +45,7 @@ web::json::value to_object(const std::map<std::string, PrimitiveValue> &values) 
 }
 
 template<bool>
-web::json::value to_object(const std::map<std::string, PrimitiveValue> &values) {
+web::json::value to_object(const std::map<std::string, primitive> &values) {
     using namespace web;
     json::value result = json::value::object();
     for (auto &pair: values) {
@@ -54,13 +54,13 @@ web::json::value to_object(const std::map<std::string, PrimitiveValue> &values) 
     return result;
 }
 
-web::json::value to_json(const ValueHolder &holder) {
+web::json::value to_json(const value_holder &holder) {
 
     using namespace web;
 
     json::value result = json::value::object();
-    if (holder.holds<PrimitiveValue>()) {
-        const auto &v = holder.get<PrimitiveValue>();
+    if (holder.holds<primitive>()) {
+        const auto &v = holder.get<primitive>();
         if (v.holds<int>()) {
             result["type"] = json::value::string("int");
             result["value"] = json::value::number(v.get<int>());
@@ -68,8 +68,8 @@ web::json::value to_json(const ValueHolder &holder) {
             result["type"] = json::value::string("float");
             result["value"] = json::value::number(v.get<float>());
         }
-    } else if (holder.holds<Vector>()) {
-        const auto &v = holder.get<Vector>();
+    } else if (holder.holds<vector>()) {
+        const auto &v = holder.get<vector>();
         const auto &values = v.getValues();
         if (!values.empty()) {
             auto iter = values.begin();
@@ -90,7 +90,7 @@ web::json::value to_json(const ValueHolder &holder) {
     return result;
 }
 
-std::string to_string(const ValueHolder &holder) {
+std::string to_string(const value_holder &holder) {
 
     using namespace web;
     json::value result = to_json(holder);

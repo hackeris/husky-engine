@@ -11,8 +11,8 @@
 #include <map>
 #include <string>
 
-#include "runtime/ValueBase.h"
-#include "dal/DataRepository.h"
+#include "runtime/value_base.h"
+#include "dal/data_repository.h"
 
 #include <cpprest/json.h>
 #include <cpprest/http_listener.h>
@@ -22,15 +22,15 @@ using namespace web::http;
 
 #undef U
 
-class Controller {
+class controller {
 public:
-    explicit Controller(std::shared_ptr<DataRepository> dal) : dal(std::move(dal)) {}
+    explicit controller(std::shared_ptr<data_repository> dal) : dal(std::move(dal)) {}
 
     void compute(const http_request &req) const;
 
 private:
     [[nodiscard]]
-    ValueHolder compute(const std::string &formula, const std::string &date) const;
+    value_holder compute(const std::string &formula, const std::string &date) const;
 
     template<typename K, typename V>
     static std::optional<V> get(const std::map<K, V> &m, const K &k) {
@@ -44,12 +44,12 @@ private:
 
 private:
 
-    std::shared_ptr<DataRepository> dal;
+    std::shared_ptr<data_repository> dal;
 };
 
-web::json::value to_json(const ValueHolder &holder);
+web::json::value to_json(const value_holder &holder);
 
-std::string to_string(const ValueHolder &holder);
+std::string to_string(const value_holder &holder);
 
 std::string from_base64(const std::string &base64);
 

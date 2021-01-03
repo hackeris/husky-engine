@@ -9,15 +9,14 @@ add_executable(husky_engine
         grammar/HuskyLangLexer.cpp
         grammar/HuskyLangBaseVisitor.cpp
         grammar/HuskyLangVisitor.cpp
-        main.cpp lang/GraphCompiler.cpp
-        lang/GraphCompiler.h
-        lang/Graph.h
-        runtime/GraphVM.cpp
-        runtime/GraphVM.h
-        runtime/ValueBase.h
-        runtime/ValueBase.cpp
-        runtime/Runtime.cpp runtime/Runtime.h dal/DataRepository.cpp dal/DataRepository.h runtime/lib/Function.h
-        runtime/lib/Function.cpp api/Controller.cpp api/Controller.h api/Router.cpp api/Router.h)
+        main.cpp lang/graph_compiler.cpp
+        lang/graph_compiler.h
+        lang/graph.h
+        runtime/graph_vm.cpp
+        runtime/graph_vm.h
+        runtime/value_base.h
+        runtime/runtime.cpp runtime/runtime.h dal/data_repository.cpp dal/data_repository.h runtime/lib/func.h
+        runtime/lib/func.cpp api/controller.cpp api/controller.h api/router.cpp api/router.h)
 
 find_package(cpprestsdk REQUIRED)
 find_package(OpenSSL REQUIRED)
