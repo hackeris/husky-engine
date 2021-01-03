@@ -255,6 +255,7 @@ unary_op::op_type graph_compiler::get_unary_op(const std::string &op) {
 expression_ptr graph_compiler::compile(const std::string &formula) {
 
     using namespace antlr4;
+    using namespace antlr4::tree;
     using namespace antlrcpp;
 
     std::istringstream stream(formula);
@@ -264,9 +265,9 @@ expression_ptr graph_compiler::compile(const std::string &formula) {
     CommonTokenStream tokens(&lexer);
     HuskyLangParser parser(&tokens);
 
-    tree::ParseTree *tree = parser.statement();
+    std::unique_ptr<ParseTree> tree(parser.statement());
     graph_compiler visitor;
 
-    Any visited = visitor.visit(tree);
+    Any visited = visitor.visit(tree.get());
     return visited.as<expression_ptr>();
 }
