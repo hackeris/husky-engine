@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <numeric>
 #include <utility>
+#include "util/timer.h"
 #include "data_repository.h"
 
 #include "lang/graph_compiler.h"
@@ -39,6 +40,9 @@ std::vector<std::string> data_repository::get_dates(Session &sess) {
 
 std::map<std::string, float> data_repository::get_factor_values(
         const std::string &code, const std::string &date, int offset) {
+
+    auto_timer tmr("get_factor_values, code: " + code + ", date: "
+                   + date + ", offset: " + std::to_string(offset));
 
     Session sess = client->getSession();
 

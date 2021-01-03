@@ -16,7 +16,7 @@ add_executable(husky_engine
         runtime/graph_vm.h
         runtime/value_base.h
         runtime/runtime.cpp runtime/runtime.h dal/data_repository.cpp dal/data_repository.h runtime/lib/func.h
-        runtime/lib/func.cpp api/controller.cpp api/controller.h api/router.cpp api/router.h)
+        runtime/lib/func.cpp api/controller.cpp api/controller.h api/router.cpp api/router.h util/timer.h)
 
 find_package(cpprestsdk REQUIRED)
 find_package(OpenSSL REQUIRED)

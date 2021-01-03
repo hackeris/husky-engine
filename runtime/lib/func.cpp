@@ -3,6 +3,7 @@
 //
 
 #include "func.h"
+#include "util/timer.h"
 
 value_holder rank(const runtime &rt, const std::vector<value_holder> &args) {
 
@@ -78,12 +79,19 @@ value_holder avg_t(const runtime &rt, const std::vector<value_holder> &args) {
     int begin = args[1].get<primitive>().get<int>();
     int end = args[2].get<primitive>().get<int>();
 
-    vector sum;
+    std::vector<vector> frames;
     for (int i = begin; i <= end; i++) {
-        if (i == begin) {
-            sum = ref.get(i);
+        frames.emplace_back(ref.get(i));
+    }
+
+    auto_timer tmr("avg_t on " + std::to_string(end - begin + 1) + " frames");
+
+    vector sum;
+    for (int i = 0; i < frames.size(); i++) {
+        if (i == 0) {
+            sum = frames[i];
         } else {
-            sum = sum + ref.get(i);
+            sum = sum + frames[i];
         }
     }
 
@@ -110,6 +118,8 @@ value_holder std_t(const runtime &rt, const std::vector<value_holder> &args) {
     for (int i = begin; i <= end; i++) {
         frames.emplace_back(ref.get(i));
     }
+
+    auto_timer tmr("std_t on " + std::to_string(end - begin + 1) + " frames");
 
     vector sum;
     for (int i = 0; i < frames.size(); i++) {
