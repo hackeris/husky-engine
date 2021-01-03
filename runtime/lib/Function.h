@@ -7,7 +7,12 @@
 
 #include <vector>
 #include "runtime/ValueBase.h"
+#include "runtime/Runtime.h"
 
-ValueHolder rank(const std::vector<ValueHolder> &args);
+ValueHolder rank(const Runtime &runtime, const std::vector<ValueHolder> &args);
+
+ValueHolder avail(const Runtime &runtime, const std::vector<ValueHolder> &args);
+
+ValueHolder avgT(const Runtime &runtime, const std::vector<ValueHolder> &args);
 
 #endif //HUSKY_COMPUTE_FUNCTION_H

@@ -19,7 +19,7 @@ using namespace antlrcpp;
 
 int testCompiler() {
 
-    std::string exp = "rank(roe, rank(roe) < 20) < 10";
+    std::string exp = "rank(roe, avg_t(roe, -2, 0) > 20) < 10";
     std::string date = "2020-09-10";
 
     auto host = "192.168.10.102";

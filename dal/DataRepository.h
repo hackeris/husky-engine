@@ -58,11 +58,11 @@ public:
     std::map<std::string, float> getFactorValues(
             const std::string &code, const std::string &date, int offset);
 
+    std::vector<std::string> getSymbols(const std::string &date);
+
 private:
 
     Factor getFactor(const std::string &code);
-
-    std::vector<std::string> getSymbols(const std::string &date);
 
     std::map<std::string, float> makeValues(const std::list<Row> &rows);
 

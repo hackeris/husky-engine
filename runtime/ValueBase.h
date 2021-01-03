@@ -178,14 +178,14 @@ public:
     }
 
     friend inline PrimitiveValue operator&&(const PrimitiveValue &left, const PrimitiveValue &right) {
-        if (left.valueIs<bool>() && right.valueIs<bool>()) {
+        if (left.holds<bool>() && right.holds<bool>()) {
             return PrimitiveValue(left.get<bool>() && right.get<bool>());
         }
         throw std::runtime_error("unexpected type on operator");
     }
 
     friend inline PrimitiveValue operator||(const PrimitiveValue &left, const PrimitiveValue &right) {
-        if (left.valueIs<bool>() && right.valueIs<bool>()) {
+        if (left.holds<bool>() && right.holds<bool>()) {
             return PrimitiveValue(left.get<bool>() || right.get<bool>());
         }
         throw std::runtime_error("unexpected type on operator");
@@ -200,18 +200,18 @@ public:
     }
 
     friend inline PrimitiveValue power(const PrimitiveValue &left, const PrimitiveValue &right) {
-        if (left.valueIs<int>() && right.valueIs<int>()) {
+        if (left.holds<int>() && right.holds<int>()) {
             return PrimitiveValue((int) round(pow(left.get<int>(), right.get<int>())));
-        } else if (left.valueIs<float>() || right.valueIs<float>()) {
-            auto leftVal = left.valueIs<float>() ? left.get<float>() : (float) left.get<int>();
-            auto rightVal = right.valueIs<float>() ? right.get<float>() : (float) right.get<int>();
+        } else if (left.holds<float>() || right.holds<float>()) {
+            auto leftVal = left.holds<float>() ? left.get<float>() : (float) left.get<int>();
+            auto rightVal = right.holds<float>() ? right.get<float>() : (float) right.get<int>();
             return PrimitiveValue(pow(leftVal, rightVal));
         }
         throw std::runtime_error("unexpected type on operator");
     }
 
     template<typename ValueType>
-    [[nodiscard]] inline bool valueIs() const {
+    [[nodiscard]] inline bool holds() const {
         return std::holds_alternative<ValueType>(value);
     }
 
@@ -226,13 +226,13 @@ private:
     inline static PrimitiveValue binaryOperator(
             const PrimitiveValue &left, const PrimitiveValue &right, OpType op) {
 
-        if (left.valueIs<int>() && right.valueIs<int>()) {
+        if (left.holds<int>() && right.holds<int>()) {
             return op(left.get<int>(), right.get<int>());
-        } else if (left.valueIs<float>() && right.valueIs<float>()) {
+        } else if (left.holds<float>() && right.holds<float>()) {
             return op(left.get<float>(), right.get<float>());
-        } else if (left.valueIs<float>() && right.valueIs<int>()) {
+        } else if (left.holds<float>() && right.holds<int>()) {
             return op(left.get<float>(), (float) right.get<int>());
-        } else if (left.valueIs<int>() && right.valueIs<float>()) {
+        } else if (left.holds<int>() && right.holds<float>()) {
             return op((float) left.get<int>(), right.get<float>());
         }
         throw std::runtime_error("unexpected type on operator");
@@ -240,11 +240,11 @@ private:
 
     template<class OpType>
     inline static PrimitiveValue unaryOperator(const PrimitiveValue &value, OpType op) {
-        if (value.valueIs<int>()) {
+        if (value.holds<int>()) {
             return op(value.get<int>());
-        } else if (value.valueIs<float>()) {
+        } else if (value.holds<float>()) {
             return op(value.get<float>());
-        } else if (value.valueIs<bool>()) {
+        } else if (value.holds<bool>()) {
             return op(value.get<bool>());
         }
         throw std::runtime_error("unexpected type on operator");
@@ -368,6 +368,10 @@ public:
     [[nodiscard]]
     inline bool contains(const std::string &label) const {
         return values->find(label) != values->end();
+    }
+
+    inline void put(const std::string &label, const PrimitiveValue &value) {
+        values->emplace(label, value);
     }
 
     [[nodiscard]]

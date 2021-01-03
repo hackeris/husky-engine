@@ -14,7 +14,11 @@
 #include "runtime/ValueBase.h"
 #include "dal/DataRepository.h"
 
-using Function = std::function<ValueHolder(const std::vector<ValueHolder> &)>;
+class Runtime;
+
+using Function = std::function<ValueHolder(
+        const Runtime &runtime,
+        const std::vector<ValueHolder> &)>;
 
 class Runtime {
 public:
@@ -22,18 +26,27 @@ public:
     explicit Runtime(std::string date,
                      std::shared_ptr<DataRepository> repo);
 
-    bool hasFunction(const std::string &name);
+    [[nodiscard]]
+    bool hasFunction(const std::string &name) const;
 
-    bool hasIdentifier(const std::string &name);
+    [[nodiscard]]
+    bool hasIdentifier(const std::string &name) const;
 
-    const Function &getFunction(const std::string &name);
+    [[nodiscard]]
+    const Function &getFunction(const std::string &name) const;
 
-    ValueHolder evaluate(const IdentifierRef &identifier);
+    [[nodiscard]]
+    ValueHolder evaluate(const IdentifierRef &identifier) const;
 
-    ValueHolder evaluate(const IdentifierRef &identifier, int index);
+    [[nodiscard]]
+    ValueHolder evaluate(const IdentifierRef &identifier, int index) const;
+
+    [[nodiscard]]
+    std::set<std::string> getSymbols() const;
 
 private:
-    Vector wrap(const std::map<std::string, float> &values);
+    [[nodiscard]]
+    Vector wrap(const std::map<std::string, float> &values) const;
 
 private:
     std::string date;

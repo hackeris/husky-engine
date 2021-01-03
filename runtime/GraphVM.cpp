@@ -118,7 +118,7 @@ ValueHolder GraphVM::evaluate(const FunctionCall &call) {
     }
 
     auto &f = runtime->getFunction(functionName);
-    return f(args);
+    return f(*runtime, args);
 }
 
 ValueHolder GraphVM::evaluate(const ArrayIndex &arrayIndex) {
@@ -128,7 +128,7 @@ ValueHolder GraphVM::evaluate(const ArrayIndex &arrayIndex) {
     auto indexHolder = evaluate(arrayIndex.index);
     assert(indexHolder.hold<PrimitiveValue>());
     const auto &indexValue = indexHolder.get<PrimitiveValue>();
-    assert(indexValue.valueIs<int>());
+    assert(indexValue.holds<int>());
 
     int index = indexValue.get<int>();
 
