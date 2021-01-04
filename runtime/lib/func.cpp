@@ -99,12 +99,12 @@ value_holder func::avg_t(const runtime &rt, const std::vector<value_holder> &arg
 value_holder func::std_t(const runtime &rt, const std::vector<value_holder> &args) {
 
     if (args.size() != 3) {
-        throw std::runtime_error("invalid arguments pass to avg_t");
+        throw std::runtime_error("invalid arguments pass to std_t");
     }
 
     auto maybe_ref = args[0];
     if (!maybe_ref.holds<vector_ref>()) {
-        throw std::runtime_error("invalid arguments pass to avg_t");
+        throw std::runtime_error("invalid arguments pass to std_t");
     }
 
     const auto &ref = maybe_ref.get<vector_ref>();

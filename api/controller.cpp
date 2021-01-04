@@ -19,7 +19,12 @@ value_holder controller::compute(const std::string &formula, const std::string &
     auto graph = graph_compiler::compile(formula);
 
     graph_vm gvm(rt);
-    return gvm.evaluate(graph);
+
+    auto value =  gvm.evaluate(graph);
+    if (value.holds<vector_ref>()) {
+        value = value.get<vector_ref>().get(0);
+    }
+    return value;
 }
 
 void controller::compute_get(const http_request &req) const {
