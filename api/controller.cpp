@@ -21,9 +21,9 @@ value_holder controller::compute(const std::string &formula, const std::string &
     graph_vm gvm(rt);
 
     auto value = gvm.evaluate(graph);
-//    if (value.holds<vector_ref>()) {
-//        value = value.get<vector_ref>().get(0);
-//    }
+    while (value.holds<vector_ref>()) {
+        value = value.get<vector_ref>().get(0);
+    }
     return value;
 }
 
@@ -120,8 +120,6 @@ web::json::value controller::to_json(const std::string &formula, const std::stri
                 result["value"] = to_object<bool>(values);
             }
         }
-    } else if (holder.holds<vector_ref>()) {
-        return to_json(formula, date, holder.get<vector_ref>().get(0));
     }
 
     return result;
