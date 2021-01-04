@@ -9,14 +9,19 @@
 #include "runtime/value_base.h"
 #include "runtime/runtime.h"
 
-value_holder rank(const runtime &rt, const std::vector<value_holder> &args);
+namespace husky {
+    class func {
+    public:
+        static value_holder rank(const runtime &rt, const std::vector<value_holder> &args);
 
-value_holder avail(const runtime &rt, const std::vector<value_holder> &args);
+        static value_holder avail(const runtime &rt, const std::vector<value_holder> &args);
 
-value_holder avg_t(const runtime &rt, const std::vector<value_holder> &args);
+        static value_holder avg_t(const runtime &rt, const std::vector<value_holder> &args);
 
-value_holder std_t(const runtime &rt, const std::vector<value_holder> &args);
+        static value_holder std_t(const runtime &rt, const std::vector<value_holder> &args);
 
-value_holder drop_false(const runtime &rt, const std::vector<value_holder> &args);
+        static value_holder drop_false(const runtime &rt, const std::vector<value_holder> &args);
+    };
+}
 
 #endif //HUSKY_ENGINE_FUNCTION_H

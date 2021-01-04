@@ -5,7 +5,9 @@
 #include "func.h"
 #include "util/timer.h"
 
-value_holder rank(const runtime &rt, const std::vector<value_holder> &args) {
+using namespace husky;
+
+value_holder func::rank(const runtime &rt, const std::vector<value_holder> &args) {
 
     auto to_rank = args[0].de_ref();
     auto &vec_values = to_rank.get_values();
@@ -41,7 +43,7 @@ value_holder rank(const runtime &rt, const std::vector<value_holder> &args) {
     return vector(std::move(ranks));
 }
 
-value_holder avail(const runtime &rt, const std::vector<value_holder> &args) {
+value_holder func::avail(const runtime &rt, const std::vector<value_holder> &args) {
 
     auto vector_ = args[0].de_ref();
 
@@ -59,7 +61,7 @@ value_holder avail(const runtime &rt, const std::vector<value_holder> &args) {
     return vector_;
 }
 
-value_holder avg_t(const runtime &rt, const std::vector<value_holder> &args) {
+value_holder func::avg_t(const runtime &rt, const std::vector<value_holder> &args) {
 
     if (args.size() != 3) {
         throw std::runtime_error("invalid arguments pass to avg_t");
@@ -94,7 +96,7 @@ value_holder avg_t(const runtime &rt, const std::vector<value_holder> &args) {
     return value_holder(sum) / value_holder(primitive(end - begin + 1));
 }
 
-value_holder std_t(const runtime &rt, const std::vector<value_holder> &args) {
+value_holder func::std_t(const runtime &rt, const std::vector<value_holder> &args) {
 
     if (args.size() != 3) {
         throw std::runtime_error("invalid arguments pass to avg_t");
@@ -142,7 +144,7 @@ value_holder std_t(const runtime &rt, const std::vector<value_holder> &args) {
     return value_holder(ss) / value_holder(primitive(n - 1));
 }
 
-value_holder drop_false(const runtime &rt, const std::vector<value_holder> &args) {
+value_holder func::drop_false(const runtime &rt, const std::vector<value_holder> &args) {
 
     auto sourceVec = args[0].de_ref();
 

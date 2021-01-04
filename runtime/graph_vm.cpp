@@ -7,6 +7,8 @@
 
 #include <utility>
 
+using namespace husky;
+
 graph_vm::graph_vm(std::shared_ptr<runtime> rt)
         : p_rt(std::move(rt)) {
 }

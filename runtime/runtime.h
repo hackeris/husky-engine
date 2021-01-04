@@ -14,46 +14,49 @@
 #include "runtime/value_base.h"
 #include "dal/data_repository.h"
 
-class runtime;
+namespace husky {
 
-using ext_function = std::function<value_holder(
-        const runtime &rt,
-        const std::vector<value_holder> &)>;
+    class runtime;
 
-class runtime {
-public:
+    using ext_function = std::function<value_holder(
+            const runtime &rt,
+            const std::vector<value_holder> &)>;
 
-    explicit runtime(std::string date,
-                     std::shared_ptr<data_repository> repo);
+    class runtime {
+    public:
 
-    [[nodiscard]]
-    bool has_function(const std::string &name) const;
+        explicit runtime(std::string date,
+                         std::shared_ptr<data_repository> repo);
 
-    [[nodiscard]]
-    bool has_identifier(const std::string &name) const;
+        [[nodiscard]]
+        bool has_function(const std::string &name) const;
 
-    [[nodiscard]]
-    const ext_function &get_function(const std::string &name) const;
+        [[nodiscard]]
+        bool has_identifier(const std::string &name) const;
 
-    [[nodiscard]]
-    value_holder evaluate(const identifier_ref &identifier) const;
+        [[nodiscard]]
+        const ext_function &get_function(const std::string &name) const;
 
-    [[nodiscard]]
-    value_holder evaluate(const identifier_ref &identifier, int index) const;
+        [[nodiscard]]
+        value_holder evaluate(const identifier_ref &identifier) const;
 
-    [[nodiscard]]
-    std::set<std::string> get_symbols() const;
+        [[nodiscard]]
+        value_holder evaluate(const identifier_ref &identifier, int index) const;
 
-private:
-    [[nodiscard]]
-    vector wrap(const std::map<std::string, float> &values) const;
+        [[nodiscard]]
+        std::set<std::string> get_symbols() const;
 
-private:
-    std::string date;
-    std::shared_ptr<data_repository> repo;
-    std::map<std::string, ext_function> functions;
-    std::map<std::string, std::function<value_holder(const runtime&)>> internal_idents;
-};
+    private:
+        [[nodiscard]]
+        vector wrap(const std::map<std::string, float> &values) const;
 
+    private:
+        std::string date;
+        std::shared_ptr<data_repository> repo;
+        std::map<std::string, ext_function> functions;
+        std::map<std::string, std::function<value_holder(const runtime &)>> internal_idents;
+    };
+
+}
 
 #endif //HUSKY_ENGINE_RUNTIME_H

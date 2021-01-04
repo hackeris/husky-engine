@@ -12,6 +12,7 @@
 #include "graph_compiler.h"
 
 using namespace antlrcpp;
+using namespace husky;
 
 antlrcpp::Any graph_compiler::visitInt(HuskyLangParser::IntContext *context) {
     auto value = (int) std::strtol(context->getText().c_str(), nullptr, 10);

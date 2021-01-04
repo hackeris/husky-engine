@@ -10,6 +10,8 @@
 #include <cpprest/json.h>
 #include "util/timer.h"
 
+using namespace husky;
+
 value_holder controller::compute(const std::string &formula, const std::string &date) const {
 
     auto rt = std::make_shared<runtime>(date, dal);

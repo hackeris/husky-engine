@@ -9,15 +9,17 @@
 
 #include <utility>
 
+using namespace husky;
+
 runtime::runtime(std::string date,
                  std::shared_ptr<data_repository> repo)
         : repo(std::move(repo)), date(std::move(date)) {
 
-    functions.emplace("rank", rank);
-    functions.emplace("avail", avail);
-    functions.emplace("avg_t", avg_t);
-    functions.emplace("std_t", std_t);
-    functions.emplace("drop_false", drop_false);
+    functions.emplace("rank", func::rank);
+    functions.emplace("avail", func::avail);
+    functions.emplace("avg_t", func::avg_t);
+    functions.emplace("std_t", func::std_t);
+    functions.emplace("drop_false", func::drop_false);
 
     internal_idents.emplace("chi_next", [](const runtime &rt) -> decltype(auto) {
         auto symbols = rt.get_symbols();

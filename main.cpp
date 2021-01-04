@@ -10,6 +10,7 @@
 #include "api/controller.h"
 
 using namespace ::mysqlx;
+using namespace husky;
 
 std::function<void(void)> signal_handler;
 

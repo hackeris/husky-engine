@@ -22,6 +22,9 @@ using namespace web::http;
 
 #undef U
 
+using husky::data_repository;
+using husky::value_holder;
+
 class controller {
 public:
     explicit controller(std::shared_ptr<data_repository> dal) : dal(std::move(dal)) {}

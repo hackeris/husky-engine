@@ -13,6 +13,7 @@
 #include "runtime/runtime.h"
 #include "runtime/graph_vm.h"
 
+using namespace husky;
 
 data_repository::data_repository(std::shared_ptr<Client> client)
         : client(std::move(client)) {
