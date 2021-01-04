@@ -50,9 +50,7 @@ namespace husky::api {
             return (*iter).second;
         }
 
-        static json::value to_json(const value_holder &holder);
-
-        static std::string to_string(const value_holder &holder);
+        static json::value to_json(const std::string &formula, const std::string &date, const value_holder &holder);
 
         static std::string from_base64(const std::string &base64);
 

@@ -49,18 +49,24 @@ std::map<std::string, float> data_repository::get_factor_values(
 
     auto factor_ = get_factor(sess, code);
     if (factor_.id <= 0) {
+        sess.close();
         return std::map<std::string, float>();
     }
 
+    std::optional<std::map<std::string, float>> values;
     if (factor_.type == factor_type::market) {
-        return get_market_values(sess, factor_.id, date, offset);
+        values = get_market_values(sess, factor_.id, date, offset);
     } else if (factor_.type == factor_type::financial) {
-        return get_financial_values(sess, factor_.id, date, offset);
+        values = get_financial_values(sess, factor_.id, date, offset);
     } else if (factor_.type == factor_type::formula) {
-        return get_formula_values(sess, factor_.formula, date, offset);
+        values = get_formula_values(sess, factor_.formula, date, offset);
     }
 
     sess.close();
+
+    if (values.has_value()) {
+        return values.value();
+    }
 
     throw std::runtime_error("unsupported factor_ type");
 }

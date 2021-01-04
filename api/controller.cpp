@@ -20,10 +20,10 @@ value_holder controller::compute(const std::string &formula, const std::string &
 
     graph_vm gvm(rt);
 
-    auto value =  gvm.evaluate(graph);
-    if (value.holds<vector_ref>()) {
-        value = value.get<vector_ref>().get(0);
-    }
+    auto value = gvm.evaluate(graph);
+//    if (value.holds<vector_ref>()) {
+//        value = value.get<vector_ref>().get(0);
+//    }
     return value;
 }
 
@@ -31,18 +31,19 @@ void controller::compute_get(const http_request &req) const {
 
     const auto &params = uri::split_query(req.request_uri().query());
     auto encoded_formula = get<std::string>(params, "formula");
-    auto date = get<std::string>(params, "date");
-    if (!(encoded_formula.has_value() && date.has_value())) {
+    auto date_opt = get<std::string>(params, "date");
+    if (!(encoded_formula.has_value() && date_opt.has_value())) {
         req.reply(status_codes::BadRequest);
         return;
     }
 
     auto formula = from_base64(encoded_formula.value());
+    auto date = date_opt.value();
 
-    auto_timer tmr("compute values of '" + formula + "' at " + date.value());
+    auto_timer tmr("compute values of '" + formula + "' at " + date);
 
-    auto result = compute(formula, date.value());
-    auto res = to_json(result);
+    auto result = compute(formula, date);
+    auto res = to_json(formula, date, result);
     req.reply(status_codes::OK, res);
 }
 
@@ -62,7 +63,7 @@ void controller::compute_post(const http_request &req) const {
     auto_timer tmr("compute values of '" + formula + "' at " + date);
 
     auto result = compute(formula, date);
-    auto res = to_json(result);
+    auto res = to_json(formula, date, result);
     req.reply(status_codes::OK, res);
 }
 
@@ -86,11 +87,13 @@ web::json::value to_object(const std::map<std::string, primitive> &values) {
     return result;
 }
 
-web::json::value controller::to_json(const value_holder &holder) {
+web::json::value controller::to_json(const std::string &formula, const std::string &date, const value_holder &holder) {
 
     using namespace web;
 
     json::value result = json::value::object();
+    result["date"] = json::value::string(date);
+    result["formula"] = json::value::string(formula);
     if (holder.holds<primitive>()) {
         const auto &v = holder.get<primitive>();
         if (v.holds<int>()) {
@@ -118,20 +121,10 @@ web::json::value controller::to_json(const value_holder &holder) {
             }
         }
     } else if (holder.holds<vector_ref>()) {
-        return to_json(holder.get<vector_ref>().get(0));
+        return to_json(formula, date, holder.get<vector_ref>().get(0));
     }
 
     return result;
-}
-
-std::string controller::to_string(const value_holder &holder) {
-
-    using namespace web;
-    json::value result = to_json(holder);
-    std::stringstream stream;
-    result.serialize(stream);
-
-    return stream.str();
 }
 
 std::string controller::from_base64(const std::string &base64) {
