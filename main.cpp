@@ -33,6 +33,9 @@ void sig_int_handler(int) {
  */
 int startService(int argc, const char *argv[]) {
 
+    using husky::web::router;
+    using namespace husky::api;
+
     std::string config_file = "config.json";
     if (argc > 1) {
         config_file = argv[1];

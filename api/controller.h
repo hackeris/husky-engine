@@ -17,45 +17,49 @@
 #include <cpprest/json.h>
 #include <cpprest/http_listener.h>
 
-using namespace web;
-using namespace web::http;
 
 #undef U
 
-using husky::data_repository;
-using husky::value_holder;
+namespace husky::api {
 
-class controller {
-public:
-    explicit controller(std::shared_ptr<data_repository> dal) : dal(std::move(dal)) {}
+    using namespace web;
+    using namespace ::web::http;
 
-    void compute_get(const http_request &req) const;
+    using husky::data_repository;
+    using husky::value_holder;
 
-    void compute_post(const http_request &req) const;
+    class controller {
+    public:
+        explicit controller(std::shared_ptr<data_repository> dal) : dal(std::move(dal)) {}
 
-private:
-    [[nodiscard]]
-    value_holder compute(const std::string &formula, const std::string &date) const;
+        void compute_get(const http_request &req) const;
 
-    template<typename K, typename V>
-    static std::optional<V> get(const std::map<K, V> &m, const K &k) {
-        auto iter = m.find(k);
-        if (iter == m.end()) {
-            return std::nullopt;
+        void compute_post(const http_request &req) const;
+
+    private:
+        [[nodiscard]]
+        value_holder compute(const std::string &formula, const std::string &date) const;
+
+        template<typename K, typename V>
+        static std::optional<V> get(const std::map<K, V> &m, const K &k) {
+            auto iter = m.find(k);
+            if (iter == m.end()) {
+                return std::nullopt;
+            }
+
+            return (*iter).second;
         }
 
-        return (*iter).second;
-    }
+        static json::value to_json(const value_holder &holder);
 
-private:
+        static std::string to_string(const value_holder &holder);
 
-    std::shared_ptr<data_repository> dal;
-};
+        static std::string from_base64(const std::string &base64);
 
-web::json::value to_json(const value_holder &holder);
+    private:
 
-std::string to_string(const value_holder &holder);
-
-std::string from_base64(const std::string &base64);
+        std::shared_ptr<data_repository> dal;
+    };
+}
 
 #endif //HUSKY_ENGINE_CONTROLLER_H

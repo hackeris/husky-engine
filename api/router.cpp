@@ -4,6 +4,8 @@
 
 #include "router.h"
 
+using namespace husky::web;
+
 bool router::handle(const http_request &req) {
 
     try {

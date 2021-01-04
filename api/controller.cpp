@@ -11,6 +11,7 @@
 #include "util/timer.h"
 
 using namespace husky;
+using namespace husky::api;
 
 value_holder controller::compute(const std::string &formula, const std::string &date) const {
 
@@ -80,7 +81,7 @@ web::json::value to_object(const std::map<std::string, primitive> &values) {
     return result;
 }
 
-web::json::value to_json(const value_holder &holder) {
+web::json::value controller::to_json(const value_holder &holder) {
 
     using namespace web;
 
@@ -118,7 +119,7 @@ web::json::value to_json(const value_holder &holder) {
     return result;
 }
 
-std::string to_string(const value_holder &holder) {
+std::string controller::to_string(const value_holder &holder) {
 
     using namespace web;
     json::value result = to_json(holder);
@@ -128,7 +129,7 @@ std::string to_string(const value_holder &holder) {
     return stream.str();
 }
 
-std::string from_base64(const std::string &base64) {
+std::string controller::from_base64(const std::string &base64) {
 
     auto buffer = utility::conversions::from_base64(base64);
 
