@@ -253,7 +253,7 @@ unary_op::op_type graph_compiler::get_unary_op(const std::string &op) {
     }
 }
 
-expression_ptr graph_compiler::compile(const std::string &formula) {
+graph graph_compiler::compile(const std::string &formula) {
 
     using namespace antlr4;
     using namespace antlr4::tree;

@@ -184,15 +184,12 @@ data_repository::get_formula_values(
         return std::map<std::string, float>();
     }
 
-    auto expr = graph_compiler::compile(formula);
+    auto graph = graph_compiler::compile(formula);
     auto rt = std::make_shared<runtime>(
             date_, std::make_shared<data_repository>(*this));
     graph_vm vm(rt);
 
-    value_holder value = vm.evaluate(expr);
-    if (!value.holds<vector>()) {
-        return std::map<std::string, float>();
-    }
+    value_holder value = vm.run(graph);
 
     vector vec = value.get<vector>();
     const std::set<std::string> &keys = vec.keys();

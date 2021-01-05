@@ -63,7 +63,7 @@ namespace husky {
 
         antlrcpp::Any visitInt(HuskyLangParser::IntContext *context) override;
 
-        static expression_ptr compile(const std::string &formula);
+        static graph compile(const std::string &formula);
 
     private:
         static expression_ptr wrap_expression(const antlrcpp::Any &any);

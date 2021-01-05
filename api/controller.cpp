@@ -20,11 +20,7 @@ value_holder controller::compute(const std::string &formula, const std::string &
 
     graph_vm gvm(rt);
 
-    auto value = gvm.evaluate(graph);
-    while (value.holds<vector_ref>()) {
-        value = value.get<vector_ref>().get(0);
-    }
-    return value;
+    return gvm.run(graph);
 }
 
 void controller::compute_get(const http_request &req) const {

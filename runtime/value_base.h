@@ -541,12 +541,16 @@ namespace husky {
             throw std::runtime_error("unexpected operation");
         }
 
+        [[nodiscard]]
         inline vector de_ref() const {
             if (holds<vector>()) {
                 return get<vector>();
             } else if (holds<vector_ref>()) {
-                vector_ref ref = get<vector_ref>();
-                return ref.get(0);
+                value_holder val = *this;
+                if (val.holds<vector_ref>()) {
+                    val = val.get<vector_ref>().get(0);
+                }
+                return val.get<vector>();
             }
             throw std::runtime_error("unexpected operation");
         }

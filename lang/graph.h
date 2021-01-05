@@ -19,6 +19,11 @@ namespace husky {
         virtual ~node_base() = default;
     };
 
+    class expression;
+
+    using expression_ptr = std::shared_ptr<expression>;
+    using graph = expression_ptr;
+
     class literal : public node_base {
     public:
 
@@ -61,11 +66,7 @@ namespace husky {
 
     class atom;
 
-    class expression;
-
     using atom_ptr = std::shared_ptr<atom>;
-
-    using expression_ptr = std::shared_ptr<expression>;
 
     class binary_op : public node_base {
     public:

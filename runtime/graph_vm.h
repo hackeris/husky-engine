@@ -21,6 +21,9 @@ namespace husky {
 
         explicit graph_vm(std::shared_ptr<runtime> rt);
 
+        value_holder run(const graph &expr_ptr);
+
+    private:
         value_holder evaluate(const expression_ptr &expr_ptr);
 
         value_holder evaluate(const binary_op &bop);

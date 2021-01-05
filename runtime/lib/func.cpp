@@ -14,7 +14,7 @@ value_holder func::rank(const runtime &rt, const std::vector<value_holder> &args
 
     std::vector<std::pair<std::string, primitive>> values;
     if (args.size() > 1) {
-        auto mask_vec = args[1].de_ref().as<vector>();
+        auto mask_vec = args[1].de_ref();
         auto &mask_values = mask_vec.get_values();
         std::copy_if(vec_values.begin(), vec_values.end(),
                      std::back_inserter(values),

@@ -137,3 +137,11 @@ value_holder graph_vm::evaluate(const array_index &expr) {
 
     return p_rt->evaluate(identifier, index);
 }
+
+value_holder graph_vm::run(const graph &expr_ptr) {
+    auto value = evaluate(expr_ptr);
+    while (value.holds<vector_ref>()) {
+        value = value.get<vector_ref>().get(0);
+    }
+    return value;
+}
