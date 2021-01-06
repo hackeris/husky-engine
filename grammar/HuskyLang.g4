@@ -2,7 +2,7 @@ grammar HuskyLang;
 
 
 statement:
-    expression   #   ToExpression
+    expression   EOF    #   ToExpression
     ;
 
 expression

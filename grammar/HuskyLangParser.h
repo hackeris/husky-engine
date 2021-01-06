@@ -65,6 +65,7 @@ public:
     ToExpressionContext(StatementContext *ctx);
 
     ExpressionContext *expression();
+    antlr4::tree::TerminalNode *EOF();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };

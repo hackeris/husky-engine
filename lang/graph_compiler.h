@@ -5,7 +5,7 @@
 #ifndef HUSKY_ENGINE_GRAPHCOMPILER_H
 #define HUSKY_ENGINE_GRAPHCOMPILER_H
 
-#include "lang/graph.h"
+#include "graph.h"
 #include "grammar/HuskyLangVisitor.h"
 
 namespace husky {

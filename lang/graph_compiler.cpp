@@ -8,8 +8,10 @@
 #include "grammar/HuskyLangLexer.h"
 #include "grammar/HuskyLangParser.h"
 
-#include "lang/graph.h"
+#include "graph.h"
+#include "error_listener.h"
 #include "graph_compiler.h"
+#include "util/finalize.h"
 
 using namespace antlrcpp;
 using namespace husky;
@@ -266,14 +268,23 @@ graph graph_compiler::compile(const std::string &formula) {
     CommonTokenStream tokens(&lexer);
     HuskyLangParser parser(&tokens);
 
-    ParseTree *tree = parser.statement();
-    graph_compiler visitor;
+    finalize on_final([&parser, &tokens, &lexer, &input]() {
+        parser.reset();
+        tokens.reset();
+        lexer.reset();
+        input.reset();
+    });
 
+    error_listener err_listener;
+    parser.addErrorListener(&err_listener);
+
+    ParseTree *tree = parser.statement();
+    if (err_listener.has_error()) {
+        throw err_listener.as_exception();
+    }
+
+    graph_compiler visitor;
     Any visited = visitor.visit(tree);
-    parser.reset();
-    tokens.reset();
-    lexer.reset();
-    input.reset();
 
     return visited.as<expression_ptr>();
 }

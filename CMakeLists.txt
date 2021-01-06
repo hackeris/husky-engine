@@ -26,6 +26,9 @@ add_executable(husky_engine
         api/router.cpp
         api/router.h
         util/timer.h
+        lang/error_listener.cpp
+        lang/error_listener.h
+        util/finalize.h
         main.cpp)
 
 find_package(cpprestsdk REQUIRED)
