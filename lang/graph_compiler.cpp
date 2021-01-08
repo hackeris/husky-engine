@@ -288,3 +288,33 @@ graph graph_compiler::compile(const std::string &formula) {
 
     return visited.as<expression_ptr>();
 }
+
+void graph_compiler::syntax_check(const std::string &formula, std::vector<syntax_error_item> &errors) {
+
+    using namespace antlr4;
+    using namespace antlr4::tree;
+    using namespace antlrcpp;
+
+    std::istringstream stream(formula);
+
+    ANTLRInputStream input(stream);
+    HuskyLangLexer lexer(&input);
+    CommonTokenStream tokens(&lexer);
+    HuskyLangParser parser(&tokens);
+
+    finalize on_final([&parser, &tokens, &lexer, &input]() {
+        parser.reset();
+        tokens.reset();
+        lexer.reset();
+        input.reset();
+    });
+
+    error_listener err_listener;
+    parser.addErrorListener(&err_listener);
+
+    parser.statement();
+    if (err_listener.has_error()) {
+        std::copy(err_listener.get_errors().begin(), err_listener.get_errors().end(),
+                  std::back_inserter(errors));
+    }
+}

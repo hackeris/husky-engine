@@ -13,36 +13,6 @@
 using namespace husky;
 using namespace husky::api;
 
-value_holder controller::compute(const std::string &formula, const std::string &date) const {
-
-    auto rt = std::make_shared<runtime>(date, dal);
-    auto graph = graph_compiler::compile(formula);
-
-    graph_vm gvm(rt);
-
-    return gvm.run(graph);
-}
-
-void controller::compute_get(const http_request &req) const {
-
-    const auto &params = uri::split_query(req.request_uri().query());
-    auto encoded_formula = get<std::string>(params, "formula");
-    auto date_opt = get<std::string>(params, "date");
-    if (!(encoded_formula.has_value() && date_opt.has_value())) {
-        req.reply(status_codes::BadRequest);
-        return;
-    }
-
-    auto formula = from_base64(encoded_formula.value());
-    auto date = date_opt.value();
-
-    auto_timer tmr("compute values of '" + formula + "' at " + date);
-
-    auto result = compute(formula, date);
-    auto res = to_json(formula, date, result);
-    req.reply(status_codes::OK, res);
-}
-
 void controller::compute_post(const http_request &req) const {
 
     using concurrency::streams::stringstreambuf;
@@ -53,14 +23,54 @@ void controller::compute_post(const http_request &req) const {
 
     json::value body = json::value::parse(content);
 
-    auto formula = body["formula"].as_string();
     auto date = body["date"].as_string();
+    auto formula = body["formula"].as_string();
 
     auto_timer tmr("compute values of '" + formula + "' at " + date);
 
-    auto result = compute(formula, date);
-    auto res = to_json(formula, date, result);
+    std::vector<syntax_error_item> errors;
+    graph_compiler::syntax_check(formula, errors);
+    if (errors.empty()) {
+        auto result = compute(formula, date);
+        auto res = to_json(formula, date, result);
+        req.reply(status_codes::OK, res);
+    } else {
+        json::value res = json::value::object();
+        res["errors"] = to_json(errors);
+        req.reply(status_codes::OK, res);
+    }
+}
+
+void controller::syntax_check(const http_request &req) const {
+
+    using namespace web;
+    using concurrency::streams::stringstreambuf;
+
+    stringstreambuf buffer;
+    req.body().read_to_end(buffer).wait();
+    std::string content = buffer.collection();
+
+    json::value body = json::value::parse(content);
+
+    auto formula = body["formula"].as_string();
+
+    std::vector<syntax_error_item> errors;
+    graph_compiler::syntax_check(formula, errors);
+
+    json::value res = json::value::object();
+    res["errors"] = to_json(errors);
+
     req.reply(status_codes::OK, res);
+}
+
+value_holder controller::compute(const std::string &formula, const std::string &date) const {
+
+    auto rt = std::make_shared<runtime>(date, dal);
+    auto graph = graph_compiler::compile(formula);
+
+    graph_vm gvm(rt);
+
+    return gvm.run(graph);
 }
 
 template<typename T>
@@ -121,13 +131,21 @@ web::json::value controller::to_json(const std::string &formula, const std::stri
     return result;
 }
 
-std::string controller::from_base64(const std::string &base64) {
+json::value controller::to_json(const std::vector<syntax_error_item> &errors) {
 
-    auto buffer = utility::conversions::from_base64(base64);
-
-    std::ostringstream oss;
-    std::copy(buffer.begin(), buffer.end(),
-              std::ostream_iterator<unsigned char>(oss));
-
-    return oss.str();
+    if (!errors.empty()) {
+        std::vector<json::value> error_values;
+        std::transform(errors.begin(), errors.end(),
+                       std::back_inserter(error_values),
+                       [](const syntax_error_item &err) {
+                           json::value val = json::value::object();
+                           val["line"] = json::value::number((int) err.line);
+                           val["pos"] = json::value::number((int) err.pos);
+                           val["err"] = json::value::string(err.msg);
+                           return val;
+                       });
+        return json::value::array(error_values);
+    } else {
+        return json::value::array();
+    }
 }

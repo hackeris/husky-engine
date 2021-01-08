@@ -17,8 +17,9 @@
 #include <cpprest/json.h>
 #include <cpprest/http_listener.h>
 
-
 #undef U
+
+#include "lang/graph_compiler.h"
 
 namespace husky::api {
 
@@ -32,9 +33,9 @@ namespace husky::api {
     public:
         explicit controller(std::shared_ptr<data_repository> dal) : dal(std::move(dal)) {}
 
-        void compute_get(const http_request &req) const;
-
         void compute_post(const http_request &req) const;
+
+        void syntax_check(const http_request &req) const;
 
     private:
         [[nodiscard]]
@@ -52,7 +53,7 @@ namespace husky::api {
 
         static json::value to_json(const std::string &formula, const std::string &date, const value_holder &holder);
 
-        static std::string from_base64(const std::string &base64);
+        static json::value to_json(const std::vector<syntax_error_item> &errors);
 
     private:
 

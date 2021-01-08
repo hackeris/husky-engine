@@ -6,6 +6,7 @@
 #define HUSKY_ENGINE_GRAPHCOMPILER_H
 
 #include "graph.h"
+#include "error_listener.h"
 #include "grammar/HuskyLangVisitor.h"
 
 namespace husky {
@@ -64,6 +65,8 @@ namespace husky {
         antlrcpp::Any visitInt(HuskyLangParser::IntContext *context) override;
 
         static graph compile(const std::string &formula);
+
+        static void syntax_check(const std::string &formula, std::vector<syntax_error_item>& errors);
 
     private:
         static expression_ptr wrap_expression(const antlrcpp::Any &any);

@@ -67,12 +67,10 @@ int startService(int argc, const char *argv[]) {
 
     controller api(dal);
     router route;
-    route.support("/api/compute", methods::GET, [&api](const auto &req) {
-        api.compute_get(req);
-    });
-    route.support("/api/compute", methods::POST, [&api](const auto &req) {
-        api.compute_post(req);
-    });
+    route.support("/api/compute", methods::POST,
+                  [&api](const http_request &req) { api.compute_post(req); });
+    route.support("/api/check", methods::POST,
+                  [&api](const http_request &req) { api.syntax_check(req); });
 
     http_listener listener(entry);
     listener.support(route);

@@ -18,24 +18,26 @@ using antlr4::Token;
 using antlr4::Parser;
 using antlr4::Recognizer;
 
+struct syntax_error_item {
+public:
+    size_t line;
+    size_t pos;
+    std::string msg;
+
+public:
+    [[nodiscard]]
+    std::string to_string() const {
+        return std::string() + "Syntax error at " + std::to_string(line) + ":" + std::to_string(pos) + ", " + msg;
+    }
+};
+
+class syntax_error : public std::runtime_error {
+public:
+    explicit syntax_error(const std::string &w) : std::runtime_error(w) {}
+};
+
 class error_listener : public antlr4::ANTLRErrorListener {
 public:
-    struct syntax_error_item {
-        size_t line;
-        size_t charPositionInLine;
-        std::string msg;
-
-    public:
-        [[nodiscard]]
-        std::string to_string() const {
-            return std::string() + "Error at " + std::to_string(charPositionInLine) + ", " + msg;
-        }
-    };
-
-    class syntax_error : public std::runtime_error {
-    public:
-        explicit syntax_error(const std::string &w) : std::runtime_error(w) {}
-    };
 
     void syntaxError(Recognizer *recognizer, Token *offendingSymbol, size_t line,
                      size_t charPositionInLine, const std::string &msg, std::exception_ptr e) override;
