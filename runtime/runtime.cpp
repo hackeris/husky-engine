@@ -18,7 +18,12 @@ runtime::runtime(std::string date,
     functions.emplace("rank", func::rank);
     functions.emplace("avail", func::avail);
     functions.emplace("avg_t", func::avg_t);
+    functions.emplace("sum_t", func::sum_t);
     functions.emplace("std_t", func::std_t);
+    functions.emplace("avg", func::avg);
+    functions.emplace("sum", func::sum);
+    functions.emplace("std", func::std);
+    functions.emplace("zscore", func::zscore);
     functions.emplace("drop_false", func::drop_false);
 
     internal_idents.emplace("chi_next", [](const runtime &rt) -> decltype(auto) {
