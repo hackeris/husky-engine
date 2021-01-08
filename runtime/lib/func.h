@@ -30,9 +30,20 @@ namespace husky {
 
         static value_holder zscore(const runtime &rt, const std::vector<value_holder> &args);
 
+        static value_holder noisy(const runtime &rt, const std::vector<value_holder> &args);
+
+        static value_holder log(const runtime &rt, const std::vector<value_holder> &args);
+
+        static value_holder sqrt(const runtime &rt, const std::vector<value_holder> &args);
+
+        static value_holder exp(const runtime &rt, const std::vector<value_holder> &args);
+
         static value_holder drop_false(const runtime &rt, const std::vector<value_holder> &args);
 
         static value_holder mask(const runtime &rt, const vector &v, const vector &mask_vec);
+
+    private:
+        static value_holder sqrt_(const value_holder &arg);
     };
 }
 

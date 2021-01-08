@@ -24,30 +24,37 @@ runtime::runtime(std::string date,
     functions.emplace("sum", func::sum);
     functions.emplace("std", func::std);
     functions.emplace("zscore", func::zscore);
+    functions.emplace("noisy", func::noisy);
+    functions.emplace("log", func::log);
+    functions.emplace("exp", func::exp);
+    functions.emplace("sqrt_", func::sqrt);
     functions.emplace("drop_false", func::drop_false);
 
-    internal_idents.emplace("chi_next", [](const runtime &rt) -> decltype(auto) {
-        auto symbols = rt.get_symbols();
-        std::map<std::string, primitive> values;
-        std::transform(symbols.begin(), symbols.end(),
-                       std::inserter(values, values.end()),
-                       [](const std::string &s) -> decltype(auto) {
-                           bool val = (s[0] == '3');
-                           return std::make_pair(s, primitive{val});
-                       });
-        return value_holder(vector(std::move(values)));
-    });
-    internal_idents.emplace("star", [](const runtime &rt) -> decltype(auto) {
-        auto symbols = rt.get_symbols();
-        std::map<std::string, primitive> values;
-        std::transform(symbols.begin(), symbols.end(),
-                       std::inserter(values, values.end()),
-                       [](const std::string &s) -> decltype(auto) {
-                           bool val = (s[0] == '6' && s[1] == '8' && s[2] == '8');
-                           return std::make_pair(s, primitive{val});
-                       });
-        return value_holder(vector(std::move(values)));
-    });
+    internal_idents.emplace(
+            "all",
+            wrap([](const auto &s) -> decltype(auto) {
+                return true;
+            }));
+    internal_idents.emplace(
+            "chi_next",
+            wrap([](const auto &s) -> decltype(auto) {
+                return s[0] == '3';
+            }));
+    internal_idents.emplace(
+            "star",
+            wrap([](const auto &s) -> decltype(auto) {
+                return (s[0] == '6' && s[1] == '8' && s[2] == '8');
+            }));
+    internal_idents.emplace(
+            "sse",
+            wrap([](const auto &s) -> decltype(auto) {
+                return s[0] == '6';
+            }));
+    internal_idents.emplace(
+            "sze",
+            wrap([](const auto &s) -> decltype(auto) {
+                return s[0] == '0' || s[0] == '3';
+            }));
 }
 
 bool runtime::has_function(const std::string &name) const {
@@ -118,6 +125,22 @@ std::set<std::string> runtime::get_symbols() const {
     std::copy(symbols.begin(), symbols.end(),
               std::inserter(result, result.end()));
     return result;
+}
+
+std::function<value_holder(const runtime &rt)> runtime::wrap(
+        const std::function<bool(const std::string &)> &pred) {
+
+    return [pred](const runtime &rt) -> decltype(auto) {
+        auto symbols = rt.get_symbols();
+        std::map<std::string, primitive> values;
+        std::transform(symbols.begin(), symbols.end(),
+                       std::inserter(values, values.end()),
+                       [&](const std::string &s) -> decltype(auto) {
+                           bool val = pred(s);
+                           return std::make_pair(s, primitive{val});
+                       });
+        return value_holder(vector(std::move(values)));
+    };
 }
 
 

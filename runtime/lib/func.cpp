@@ -2,6 +2,9 @@
 // Created by rainm on 2021/1/3.
 //
 
+#include <random>
+#include <cmath>
+
 #include "func.h"
 #include "util/timer.h"
 
@@ -167,7 +170,7 @@ value_holder func::std_t(const runtime &rt, const std::vector<value_holder> &arg
         }
     }
 
-    return value_holder(ss) / value_holder(primitive(n - 1));
+    return sqrt_(value_holder(ss) / value_holder(primitive(n - 1)));
 }
 
 value_holder func::drop_false(const runtime &rt, const std::vector<value_holder> &args) {
@@ -207,13 +210,13 @@ value_holder func::mask(const runtime &rt, const vector &v, const vector &mask_v
 
 value_holder func::avg(const runtime &rt, const std::vector<value_holder> &args) {
 
-    vector to_rank = args[0].de_ref();
+    vector vec = args[0].de_ref();
     std::map<std::string, primitive> vec_values;
     if (args.size() > 1) {
-        auto masked = mask(rt, to_rank, args[1].de_ref());
+        auto masked = mask(rt, vec, args[1].de_ref());
         vec_values = masked.de_ref().get_values();
     } else {
-        vec_values = to_rank.get_values();
+        vec_values = vec.get_values();
     }
 
     int n = vec_values.size();
@@ -225,13 +228,13 @@ value_holder func::avg(const runtime &rt, const std::vector<value_holder> &args)
 }
 
 value_holder func::sum(const runtime &rt, const std::vector<value_holder> &args) {
-    vector to_rank = args[0].de_ref();
+    vector vec = args[0].de_ref();
     std::map<std::string, primitive> vec_values;
     if (args.size() > 1) {
-        auto masked = mask(rt, to_rank, args[1].de_ref());
+        auto masked = mask(rt, vec, args[1].de_ref());
         vec_values = masked.de_ref().get_values();
     } else {
-        vec_values = to_rank.get_values();
+        vec_values = vec.get_values();
     }
 
     primitive sum(0);
@@ -243,13 +246,13 @@ value_holder func::sum(const runtime &rt, const std::vector<value_holder> &args)
 
 value_holder func::std(const runtime &rt, const std::vector<value_holder> &args) {
 
-    vector to_rank = args[0].de_ref();
+    vector vec = args[0].de_ref();
     std::map<std::string, primitive> vec_values;
     if (args.size() > 1) {
-        auto masked = mask(rt, to_rank, args[1].de_ref());
+        auto masked = mask(rt, vec, args[1].de_ref());
         vec_values = masked.de_ref().get_values();
     } else {
-        vec_values = to_rank.get_values();
+        vec_values = vec.get_values();
     }
 
     primitive sum(0);
@@ -257,7 +260,7 @@ value_holder func::std(const runtime &rt, const std::vector<value_holder> &args)
         sum = sum + iter.second;
     }
 
-    int n = vec_values.size();
+    float n = vec_values.size();
     auto avg = sum / primitive(n);
     primitive ss(0);
     for (const auto &iter : vec_values) {
@@ -265,26 +268,23 @@ value_holder func::std(const runtime &rt, const std::vector<value_holder> &args)
         ss = ss + delta * delta;
     }
 
-    return ss / primitive(n);
+    return primitive(::sqrt((ss / primitive(n)).get<float>()));
 }
 
 value_holder func::zscore(const runtime &rt, const std::vector<value_holder> &args) {
 
-    vector to_rank = args[0].de_ref();
-    std::map<std::string, primitive> vec_values;
-    if (args.size() > 1) {
-        auto masked = mask(rt, to_rank, args[1].de_ref());
-        vec_values = masked.de_ref().get_values();
-    } else {
-        vec_values = to_rank.get_values();
-    }
+    vector vec = args[0].de_ref();
+    primitive cap = args[2].get<primitive>();
+
+    auto masked = mask(rt, vec, args[1].de_ref());
+    std::map<std::string, primitive> vec_values = masked.de_ref().get_values();
 
     primitive sum(0);
     for (const auto &iter : vec_values) {
         sum = sum + iter.second;
     }
 
-    int n = vec_values.size();
+    float n = vec_values.size();
     auto avg = sum / primitive(n);
     primitive ss(0);
     for (const auto &iter : vec_values) {
@@ -292,8 +292,105 @@ value_holder func::zscore(const runtime &rt, const std::vector<value_holder> &ar
         ss = ss + delta * delta;
     }
 
-    auto vec_ = value_holder(vector(std::move(vec_values)));
-    auto avg_ = value_holder(avg);
-    auto std_ = value_holder((ss / primitive(n)));
-    return (vec_ - avg_) / std_;
+    auto vec_ = value_holder{vector{std::move(vec_values)}};
+    auto avg_ = value_holder{avg};
+    auto std_ = primitive{::sqrt((ss / primitive(n)).get<float>())};
+
+    auto new_vec = (vec_ - avg_) / value_holder{std_};
+    vector capped = new_vec.get<vector>();
+    capped.broadcast([&cap](primitive &v) {
+        if ((v > cap).get<bool>()) {
+            v = cap;
+        } else if ((v < -cap).get<bool>()) {
+            v = -cap;
+        }
+    });
+    return capped;
+}
+
+value_holder func::noisy(const runtime &rt, const std::vector<value_holder> &args) {
+
+    vector vec = args[0].de_ref();
+    std::map<std::string, primitive> vec_values = vec.get_values();
+
+    primitive sum(0);
+    for (const auto &iter : vec_values) {
+        sum = sum + iter.second;
+    }
+    float n = vec_values.size();
+    auto avg = sum / primitive(n);
+    primitive ss(0);
+    for (const auto &iter : vec_values) {
+        auto delta = (iter.second - avg);
+        ss = ss + delta * delta;
+    }
+
+    auto std = primitive{::sqrt((ss / primitive(n)).get<float>())};
+
+    std::random_device rd{};
+    std::mt19937 gen{rd()};
+    std::normal_distribution<> d{0.0f, 1.0f};
+
+    auto c = args[1].get<primitive>();
+    for (auto &iter : vec_values) {
+        iter.second = (iter.second) + c * std * primitive((float) d(gen));
+    }
+    return vector(std::move(vec_values));
+}
+
+value_holder func::log(const runtime &rt, const std::vector<value_holder> &args) {
+
+    vector vec = args[0].de_ref();
+    std::map<std::string, primitive> vec_values = vec.get_values();
+
+    std::map<std::string, primitive> log_values;
+    std::copy_if(vec_values.begin(), vec_values.end(),
+                 std::inserter(log_values, log_values.end()),
+                 [](const auto &el) -> decltype(auto) {
+                     auto b = el.second > primitive(0);
+                     return b.template get<bool>();
+                 });
+
+    std::for_each(log_values.begin(), log_values.end(),
+                  [](auto &p) {
+                      p.second = primitive(::log(p.second.template get<float>()));
+                  });
+    return vector(std::move(log_values));
+}
+
+value_holder func::exp(const runtime &rt, const std::vector<value_holder> &args) {
+
+    vector vec = args[0].de_ref();
+    std::map<std::string, primitive> vec_values = vec.get_values();
+
+    std::for_each(vec_values.begin(), vec_values.end(),
+                  [](auto &p) {
+                      p.second = primitive(::exp(p.second.template get<float>()));
+                  });
+    return vector(std::move(vec_values));
+}
+
+value_holder func::sqrt(const runtime &rt, const std::vector<value_holder> &args) {
+
+    return func::sqrt_(args[0]);
+}
+
+value_holder func::sqrt_(const value_holder &arg) {
+
+    vector vec = arg.de_ref();
+    std::map<std::string, primitive> vec_values = vec.get_values();
+
+    std::map<std::string, primitive> log_values;
+    std::copy_if(vec_values.begin(), vec_values.end(),
+                 std::inserter(log_values, log_values.end()),
+                 [](const auto &el) -> decltype(auto) {
+                     auto b = el.second > primitive(0);
+                     return b.template get<bool>();
+                 });
+
+    std::for_each(log_values.begin(), log_values.end(),
+                  [](auto &p) {
+                      p.second = primitive(::sqrt(p.second.template get<float>()));
+                  });
+    return vector(std::move(log_values));
 }

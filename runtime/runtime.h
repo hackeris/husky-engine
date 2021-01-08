@@ -50,6 +50,9 @@ namespace husky {
         [[nodiscard]]
         vector wrap(const std::map<std::string, float> &values) const;
 
+        std::function<value_holder(const runtime &rt)> wrap(
+                const std::function<bool(const std::string &)> &pred);
+
     private:
         std::string date;
         std::shared_ptr<data_repository> repo;

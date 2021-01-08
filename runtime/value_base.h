@@ -397,6 +397,13 @@ namespace husky {
             return std::nullopt;
         }
 
+        inline void broadcast(const std::function<void(primitive &p)> &func) {
+            std::for_each(values->begin(), values->end(),
+                          [&](auto &pair) {
+                              func(pair.second);
+                          });
+        }
+
     private:
         std::shared_ptr<std::map<std::string, primitive>> values;
     };
