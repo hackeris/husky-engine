@@ -40,20 +40,9 @@ value_holder func::rank(const runtime &rt, const std::vector<value_holder> &args
 
 value_holder func::avail(const runtime &rt, const std::vector<value_holder> &args) {
 
-    auto vector_ = args[0].de_ref();
-
-    auto symbols = rt.get_symbols();
+    auto holder = args[0];
     auto default_value = args[1].get<primitive>();
-    if (default_value.holds<int>()) {
-        default_value = primitive((float) default_value.get<int>());
-    }
-
-    for (auto &s: symbols) {
-        if (!vector_.contains(s)) {
-            vector_.put(s, default_value);
-        }
-    }
-    return vector_;
+    return avail_(rt, holder, default_value);
 }
 
 value_holder func::avg_t(const runtime &rt, const std::vector<value_holder> &args) {
@@ -93,12 +82,12 @@ value_holder func::avg_t(const runtime &rt, const std::vector<value_holder> &arg
 
 value_holder func::sum_t(const runtime &rt, const std::vector<value_holder> &args) {
     if (args.size() != 3) {
-        throw std::runtime_error("invalid arguments pass to avg_t");
+        throw std::runtime_error("invalid arguments pass to sum_t");
     }
 
     auto maybe_ref = args[0];
     if (!maybe_ref.holds<vector_ref>()) {
-        throw std::runtime_error("invalid arguments pass to avg_t");
+        throw std::runtime_error("invalid arguments pass to sum_t");
     }
 
     const auto &ref = maybe_ref.get<vector_ref>();
@@ -108,10 +97,11 @@ value_holder func::sum_t(const runtime &rt, const std::vector<value_holder> &arg
 
     std::vector<vector> frames;
     for (int i = begin; i <= end; i++) {
-        frames.emplace_back(ref.get(i));
+        auto el = ref.get(i);
+        frames.emplace_back(el);
     }
 
-    auto_timer tmr("avg_t on " + std::to_string(end - begin + 1) + " frames");
+    auto_timer tmr("sum_t on " + std::to_string(end - begin + 1) + " frames");
 
     vector sum;
     for (int i = 0; i < frames.size(); i++) {
@@ -393,4 +383,28 @@ value_holder func::sqrt_(const value_holder &arg) {
                       p.second = primitive{(float) ::sqrt(p.second.template get<float>())};
                   });
     return vector(std::move(log_values));
+}
+
+value_holder func::avail_(const runtime &rt, const value_holder &holder, const primitive &default_value) {
+
+    auto default_value_ = default_value;
+    if (default_value_.holds<int>()) {
+        default_value_ = primitive((float) default_value.get<int>());
+    }
+
+    if (holder.holds<vector>()) {
+        auto symbols = rt.get_symbols();
+        auto vector_ = holder.de_ref();
+        for (auto &s: symbols) {
+            if (!vector_.contains(s)) {
+                vector_.put(s, default_value_);
+            }
+        }
+        return vector_;
+    } else {
+        return vector_ref([default_value_, &rt, holder](int idx) -> vector {
+            auto vec = holder.get<vector_ref>().get(idx);
+            return avail_(rt, value_holder{vec}, default_value_).get<vector>();
+        });
+    }
 }

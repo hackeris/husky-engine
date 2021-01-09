@@ -44,6 +44,8 @@ namespace husky {
 
     private:
         static value_holder sqrt_(const value_holder &arg);
+
+        static value_holder avail_(const runtime &rt, const value_holder& holder, const primitive& default_value);
     };
 }
 
