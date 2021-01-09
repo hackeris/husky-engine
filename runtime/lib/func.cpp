@@ -268,7 +268,7 @@ value_holder func::std(const runtime &rt, const std::vector<value_holder> &args)
         ss = ss + delta * delta;
     }
 
-    return primitive(::sqrt((ss / primitive(n)).get<float>()));
+    return primitive{(float) ::sqrt((ss / primitive(n)).get<float>())};
 }
 
 value_holder func::zscore(const runtime &rt, const std::vector<value_holder> &args) {
@@ -294,7 +294,7 @@ value_holder func::zscore(const runtime &rt, const std::vector<value_holder> &ar
 
     auto vec_ = value_holder{vector{std::move(vec_values)}};
     auto avg_ = value_holder{avg};
-    auto std_ = primitive{::sqrt((ss / primitive(n)).get<float>())};
+    auto std_ = primitive{(float) ::sqrt((ss / primitive(n)).get<float>())};
 
     auto new_vec = (vec_ - avg_) / value_holder{std_};
     vector capped = new_vec.get<vector>();
@@ -325,7 +325,7 @@ value_holder func::noisy(const runtime &rt, const std::vector<value_holder> &arg
         ss = ss + delta * delta;
     }
 
-    auto std = primitive{::sqrt((ss / primitive(n)).get<float>())};
+    auto std = primitive{(float) ::sqrt((ss / primitive(n)).get<float>())};
 
     std::random_device rd{};
     std::mt19937 gen{rd()};
@@ -353,7 +353,7 @@ value_holder func::log(const runtime &rt, const std::vector<value_holder> &args)
 
     std::for_each(log_values.begin(), log_values.end(),
                   [](auto &p) {
-                      p.second = primitive(::log(p.second.template get<float>()));
+                      p.second = primitive{(float) ::log(p.second.template get<float>())};
                   });
     return vector(std::move(log_values));
 }
@@ -390,7 +390,7 @@ value_holder func::sqrt_(const value_holder &arg) {
 
     std::for_each(log_values.begin(), log_values.end(),
                   [](auto &p) {
-                      p.second = primitive(::sqrt(p.second.template get<float>()));
+                      p.second = primitive{(float) ::sqrt(p.second.template get<float>())};
                   });
     return vector(std::move(log_values));
 }

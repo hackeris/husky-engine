@@ -4,7 +4,7 @@
   "user": "root",
   "password": "toor",
   "database": "husky_v2",
-  "entry": "http://localhost:8080",
+  "entry": "http://127.0.0.1:8081",
   "client": {
     "pooling": {
       "enabled": true,
