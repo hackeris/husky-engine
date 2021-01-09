@@ -67,8 +67,7 @@ value_holder controller::compute(const std::string &formula, const std::string &
 
     cache_key key = cache_key{formula, date};
 
-    std::optional<value_holder> cached
-            = const_cast<controller *>(this)->cache_.get(key);
+    auto cached = const_cast<controller *>(this)->cache_.get(key);
     if (cached.has_value()) {
         return cached.value();
     }
@@ -135,6 +134,9 @@ web::json::value controller::to_json(const std::string &formula, const std::stri
                 result["type"] = json::value::string("vector<bool>");
                 result["value"] = to_object<bool>(values);
             }
+        } else {
+            result["type"] = json::value::string("vector<float>");
+            result["value"] = json::value::object();
         }
     }
 
