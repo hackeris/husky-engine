@@ -5,6 +5,7 @@
   "password": "toor",
   "database": "husky_v2",
   "entry": "http://127.0.0.1:8081",
+  "cache_size": 3,
   "client": {
     "pooling": {
       "enabled": true,

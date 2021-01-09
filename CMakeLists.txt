@@ -29,6 +29,7 @@ add_executable(husky_engine
         lang/error_listener.cpp
         lang/error_listener.h
         util/finalize.h
+        util/lru_cache.h
         main.cpp)
 
 find_package(cpprestsdk REQUIRED)

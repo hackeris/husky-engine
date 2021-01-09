@@ -65,12 +65,22 @@ void controller::syntax_check(const http_request &req) const {
 
 value_holder controller::compute(const std::string &formula, const std::string &date) const {
 
+    cache_key key = cache_key{formula, date};
+
+    std::optional<value_holder> cached
+            = const_cast<controller *>(this)->cache_.get(key);
+    if (cached.has_value()) {
+        return cached.value();
+    }
+
     auto rt = std::make_shared<runtime>(date, dal);
     auto graph = graph_compiler::compile(formula);
 
     graph_vm gvm(rt);
 
-    return gvm.run(graph);
+    value_holder value = gvm.run(graph);
+    const_cast<controller *>(this)->cache_.put(key, value);
+    return value;
 }
 
 template<typename T>

@@ -56,6 +56,8 @@ int startService(int argc, const char *argv[]) {
     auto entry = config["entry"].as_string();
     auto client_config = config["client"].serialize();
 
+    auto cache_size = config["cache_size"].as_integer();
+
     std::cout << "Will listen at: " << entry << std::endl;
     std::cout << "Use database from " << host << ":" << db_port << ", database: " << database << std::endl;
 
@@ -65,7 +67,7 @@ int startService(int argc, const char *argv[]) {
             uri, DbDoc(client_config));
     auto dal = std::make_shared<data_repository>(client);
 
-    controller api(dal);
+    controller api(dal, cache_size);
     router route;
     route.support("/api/compute", methods::POST,
                   [&api](const http_request &req) { api.compute_post(req); });

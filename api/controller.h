@@ -13,6 +13,7 @@
 
 #include "runtime/value_base.h"
 #include "dal/data_repository.h"
+#include "util/lru_cache.h"
 
 #include <cpprest/json.h>
 #include <cpprest/http_listener.h>
@@ -20,6 +21,34 @@
 #undef U
 
 #include "lang/graph_compiler.h"
+
+namespace husky::api {
+    struct cache_key {
+        std::string formula;
+        std::string date;
+    public:
+        [[nodiscard]]
+        std::size_t hash() const {
+            std::size_t h1 = std::hash<std::string>{}(formula);
+            std::size_t h2 = std::hash<std::string>{}(date);
+            return h1 ^ (h2 << 1);
+        }
+
+        friend bool operator==(const cache_key &left, const cache_key &right) {
+            return left.formula == right.formula
+                   && left.date == right.date;
+        }
+    };
+}
+
+namespace std {
+    template<>
+    struct hash<husky::api::cache_key> {
+        std::size_t operator()(husky::api::cache_key const &s) const noexcept {
+            return s.hash();
+        }
+    };
+}
 
 namespace husky::api {
 
@@ -31,7 +60,8 @@ namespace husky::api {
 
     class controller {
     public:
-        explicit controller(std::shared_ptr<data_repository> dal) : dal(std::move(dal)) {}
+        explicit controller(std::shared_ptr<data_repository> dal, size_t cache_size)
+                : dal(std::move(dal)), cache_(cache_size) {}
 
         void compute_post(const http_request &req) const;
 
@@ -56,9 +86,10 @@ namespace husky::api {
         static json::value to_json(const std::vector<syntax_error_item> &errors);
 
     private:
-
         std::shared_ptr<data_repository> dal;
+        lru_cache<cache_key, value_holder> cache_;
     };
 }
+
 
 #endif //HUSKY_ENGINE_CONTROLLER_H
