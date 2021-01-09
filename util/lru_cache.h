@@ -19,9 +19,10 @@ public:
 
         std::lock_guard<std::mutex> lk(mtx_);
 
-        auto p = cache_.find(k);
-        if (p != cache_.end()) {
-            keys_.erase(p->second.iter);
+        auto iter = cache_.find(k);
+        if (iter != cache_.end()) {
+            keys_.erase(iter->second.iter);
+            cache_.erase(k);
         } else {
             if (keys_.size() >= size_) {
                 cache_.erase(keys_.back());
@@ -37,17 +38,18 @@ public:
 
         std::lock_guard<std::mutex> lk(mtx_);
 
-        auto p = cache_.find(k);
-        if (p == cache_.end()) {
+        auto iter = cache_.find(k);
+        if (iter == cache_.end()) {
             return std::nullopt;
         }
 
-        keys_.erase(p->second.iter);
+        auto &ent = iter->second;
+        keys_.erase(ent.iter);
 
         keys_.push_front(k);
-        p->second.iter = keys_.begin();
+        ent.iter = keys_.begin();
 
-        return std::make_optional(p->second.value);
+        return std::make_optional(ent.value);
     }
 
 private:
