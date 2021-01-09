@@ -365,7 +365,7 @@ value_holder func::exp(const runtime &rt, const std::vector<value_holder> &args)
 
     std::for_each(vec_values.begin(), vec_values.end(),
                   [](auto &p) {
-                      p.second = primitive(::exp(p.second.template get<float>()));
+                      p.second = primitive{(float) ::exp(p.second.template get<float>())};
                   });
     return vector(std::move(vec_values));
 }
