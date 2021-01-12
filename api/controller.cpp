@@ -65,18 +65,19 @@ void controller::syntax_check(const http_request &req) const {
 
 void controller::cache_usage(const http_request &req) const {
     json::value res = json::value::object();
-    res["used"] = json::value::number((int)cache_.used());
-    res["size"] = json::value::number((int)cache_.size());
+    res["used"] = json::value::number((int) cache_.used());
+    res["size"] = json::value::number((int) cache_.size());
     req.reply(status_codes::OK, res);
 }
 
 value_holder controller::compute(const std::string &formula, const std::string &date) const {
 
     cache_key key = cache_key{formula, date};
-
-    auto cached = const_cast<controller *>(this)->cache_.get(key);
-    if (cached.has_value()) {
-        return cached.value();
+    if (cache_.size() > 0) {
+        auto cached = const_cast<controller *>(this)->cache_.get(key);
+        if (cached.has_value()) {
+            return cached.value();
+        }
     }
 
     auto rt = std::make_shared<runtime>(date, dal);
@@ -85,7 +86,11 @@ value_holder controller::compute(const std::string &formula, const std::string &
     graph_vm gvm(rt);
 
     value_holder value = gvm.run(graph);
-    const_cast<controller *>(this)->cache_.put(key, value);
+
+    if (cache_.size() > 0) {
+        const_cast<controller *>(this)->cache_.put(key, value);
+    }
+
     return value;
 }
 
