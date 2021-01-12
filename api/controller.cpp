@@ -76,7 +76,7 @@ value_holder controller::compute(const std::string &formula, const std::string &
     if (cache_.size() > 0) {
         auto cached = const_cast<controller *>(this)->cache_.get(key);
         if (cached.has_value()) {
-            return cached.value();
+            return from_cache(cached.value());
         }
     }
 
@@ -88,7 +88,7 @@ value_holder controller::compute(const std::string &formula, const std::string &
     value_holder value = gvm.run(graph);
 
     if (cache_.size() > 0) {
-        const_cast<controller *>(this)->cache_.put(key, value);
+        const_cast<controller *>(this)->cache_.put(key, to_cache(value));
     }
 
     return value;
@@ -172,4 +172,51 @@ json::value controller::to_json(const std::vector<syntax_error_item> &errors) {
     } else {
         return json::value::array();
     }
+}
+
+cache_value husky::api::to_cache(const value_holder &val) {
+    if (val.holds<vector>()) {
+        auto &v = val.get<vector>();
+        cached_vector cv = std::make_shared<raw_cached_vector>();
+        (*cv).resize(v.get_values().size());
+
+        int i = 0;
+        for (const auto &iter : v.get_values()) {
+            auto &el = (*cv)[i];
+            strcpy(el.symbol, iter.first.c_str());
+            if (iter.second.holds<int>()) {
+                el.type = cached_vector_element::type_integer;
+                el.value.v_i = iter.second.get<int>();
+            } else if (iter.second.holds<float>()) {
+                el.type = cached_vector_element::type_float;
+                el.value.v_f = iter.second.get<float>();
+            } else if (iter.second.holds<bool>()) {
+                el.type = cached_vector_element::type_bool;
+                el.value.v_b = iter.second.get<bool>();
+            }
+            i += 1;
+        }
+        return cv;
+    }
+    return val;
+}
+
+
+value_holder husky::api::from_cache(const cache_value &cv) {
+    if (std::holds_alternative<value_holder>(cv)) {
+        return std::get<value_holder>(cv);
+    }
+
+    cached_vector v = std::get<cached_vector>(cv);
+    std::map<std::string, primitive> result;
+    for (auto &el : *v) {
+        if (el.type == cached_vector_element::type_float) {
+            result.emplace(el.symbol, primitive(el.value.v_f));
+        } else if (el.type == cached_vector_element::type_integer) {
+            result.emplace(el.symbol, primitive(el.value.v_i));
+        } else if (el.type == cached_vector_element::type_bool) {
+            result.emplace(el.symbol, primitive(el.value.v_b));
+        }
+    }
+    return vector(std::move(result));
 }

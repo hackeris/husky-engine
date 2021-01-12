@@ -39,6 +39,29 @@ namespace husky::api {
                    && left.date == right.date;
         }
     };
+
+    struct cached_vector_element {
+        char symbol[7];
+        char type;
+        union {
+            float v_f;
+            int v_i;
+            bool v_b;
+        } value;
+
+        static constexpr char type_float = 0;
+        static constexpr char type_integer = 1;
+        static constexpr char type_bool = 2;
+    };
+
+    using raw_cached_vector = std::vector<cached_vector_element>;
+    using cached_vector = std::shared_ptr<raw_cached_vector>;
+
+    using cache_value = std::variant<cached_vector, value_holder>;
+
+    cache_value to_cache(const value_holder &val);
+
+    value_holder from_cache(const cache_value &cv);
 }
 
 namespace std {
@@ -89,7 +112,7 @@ namespace husky::api {
 
     private:
         std::shared_ptr<data_repository> dal;
-        lru_cache<cache_key, value_holder> cache_;
+        lru_cache<cache_key, cache_value> cache_;
     };
 }
 
