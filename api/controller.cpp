@@ -63,6 +63,13 @@ void controller::syntax_check(const http_request &req) const {
     req.reply(status_codes::OK, res);
 }
 
+void controller::cache_usage(const http_request &req) const {
+    json::value res = json::value::object();
+    res["used"] = json::value::number((int)cache_.used());
+    res["size"] = json::value::number((int)cache_.size());
+    req.reply(status_codes::OK, res);
+}
+
 value_holder controller::compute(const std::string &formula, const std::string &date) const {
 
     cache_key key = cache_key{formula, date};

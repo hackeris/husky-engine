@@ -61,11 +61,13 @@ namespace husky::api {
     class controller {
     public:
         explicit controller(std::shared_ptr<data_repository> dal, size_t cache_size)
-                : dal(std::move(dal)), cache_(cache_size) {}
+                : dal(std::move(dal)), cache_("value_cache", cache_size) {}
 
         void compute_post(const http_request &req) const;
 
         void syntax_check(const http_request &req) const;
+
+        void cache_usage(const http_request &req) const;
 
     private:
         [[nodiscard]]

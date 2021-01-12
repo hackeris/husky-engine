@@ -7,13 +7,17 @@
 
 #include <list>
 #include <mutex>
+#include <string>
+#include <iostream>
 #include <optional>
 #include <unordered_map>
+#include <utility>
 
 template<typename K, typename V>
 class lru_cache {
 public:
-    explicit lru_cache(size_t size) : size_(size) {}
+    explicit lru_cache(std::string name, size_t size)
+            : name_(std::move(name)), size_(size) {}
 
     void put(const K &k, const V &v) {
 
@@ -27,11 +31,14 @@ public:
             if (keys_.size() >= size_) {
                 cache_.erase(keys_.back());
                 keys_.pop_back();
+                std::cout << name_ << " cache item evicted" << std::endl;
             }
         }
 
         keys_.push_front(k);
         cache_.emplace(k, lru_entry{keys_.begin(), v});
+
+        std::cout << name_ << " cache item inserted" << std::endl;
     }
 
     std::optional<V> get(const K &k) {
@@ -49,7 +56,19 @@ public:
         keys_.push_front(k);
         ent.iter = keys_.begin();
 
+        std::cout << name_ << " cache item hit." << std::endl;
+
         return std::make_optional(ent.value);
+    }
+
+    [[nodiscard]]
+    size_t size() const {
+        return size_;
+    }
+
+    [[nodiscard]]
+    size_t used() const {
+        return keys_.size();
     }
 
 private:
@@ -64,6 +83,7 @@ private:
     std::list<K> keys_;
     std::unordered_map<K, lru_entry> cache_;
     std::mutex mtx_;
+    std::string name_;
 };
 
 #endif //HUSKY_ENGINE_LRU_CACHE_H

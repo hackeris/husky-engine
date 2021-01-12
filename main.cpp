@@ -73,6 +73,8 @@ int startService(int argc, const char *argv[]) {
                   [&api](const http_request &req) { api.compute_post(req); });
     route.support("/api/check", methods::POST,
                   [&api](const http_request &req) { api.syntax_check(req); });
+    route.support("/api/cache", methods::GET,
+                  [&api](const http_request &req) { api.cache_usage(req); });
 
     http_listener listener(entry);
     listener.support(route);
