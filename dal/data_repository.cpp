@@ -108,7 +108,7 @@ data_repository::get_financial_values(Session &sess,  const factor& f, const std
 
     std::map<std::string, float> result;
 
-    size_t chunk_size = 100;
+    size_t chunk_size = 200;
     auto iter = raw_sqls.begin();
     while (iter != raw_sqls.end()) {
         auto diff = raw_sqls.end() - iter;
