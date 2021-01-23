@@ -40,12 +40,18 @@ namespace husky {
 
         static value_holder drop_false(const runtime &rt, const std::vector<value_holder> &args);
 
+        static value_holder count(const runtime &rt, const std::vector<value_holder> &args);
+
+        static value_holder if_select(const runtime &rt, const std::vector<value_holder> &args);
+
         static value_holder mask(const runtime &rt, const vector &v, const vector &mask_vec);
 
     private:
         static value_holder sqrt_(const value_holder &arg);
 
         static value_holder avail_(const runtime &rt, const value_holder& holder, const primitive& default_value);
+
+        static std::function<std::optional<primitive>(const std::string &)> value_getter_of(const value_holder& holder);
     };
 }
 

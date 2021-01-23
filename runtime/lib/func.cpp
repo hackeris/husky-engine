@@ -360,6 +360,26 @@ value_holder func::exp(const runtime &rt, const std::vector<value_holder> &args)
     return vector(std::move(vec_values));
 }
 
+value_holder func::count(const runtime &rt, const std::vector<value_holder> &args) {
+
+    vector vec = args[0].de_ref();
+    std::map<std::string, primitive> vec_values = vec.get_values();
+
+    if (vec_values.empty()) {
+        return primitive(0);
+    }
+
+    int count = std::accumulate(
+            vec_values.begin(), vec_values.end(),
+            0, [](int a, const std::pair<std::string, primitive> &p) -> int {
+                if (p.second.holds<bool>() && p.second.get<bool>()) {
+                    return a + 1;
+                }
+                return a;
+            });
+    return primitive(count);
+}
+
 value_holder func::sqrt(const runtime &rt, const std::vector<value_holder> &args) {
 
     return func::sqrt_(args[0]);
@@ -407,4 +427,69 @@ value_holder func::avail_(const runtime &rt, const value_holder &holder, const p
             return avail_(rt, value_holder{vec}, default_value_).get<vector>();
         });
     }
+}
+
+value_holder func::if_select(const runtime &rt, const std::vector<value_holder> &args) {
+
+    auto pred_holder = args[0];
+    auto true_holder = args[1];
+    auto false_holder = args[2];
+
+    if (pred_holder.holds<primitive>()) {
+        if (!pred_holder.get<primitive>().holds<bool>()) {
+            throw std::runtime_error("invalid pred value type");
+        }
+        if (pred_holder.get<primitive>().get<bool>()) {
+            return true_holder;
+        } else {
+            return false_holder;
+        }
+    }
+
+    auto true_value_getter = value_getter_of(args[1]);
+    auto false_value_getter = value_getter_of(args[2]);
+
+    auto &pred_values = pred_holder.de_ref().get_values();
+    if (pred_values.empty()) {
+        throw std::runtime_error("invalid pred vector, empty");
+    }
+    if (!pred_values.begin()->second.holds<bool>()) {
+        throw std::runtime_error("invalid pred vector, value type is not bool");
+    }
+
+    std::map<std::string, primitive> ret_values;
+    std::for_each(pred_values.begin(), pred_values.end(),
+                  [&ret_values, &true_value_getter, &false_value_getter]
+                          (const std::pair<std::string, primitive> &p) {
+                      bool pred = p.second.template get<bool>();
+                      auto maybe_val = pred
+                                       ? true_value_getter(p.first)
+                                       : false_value_getter(p.first);
+                      if (maybe_val.has_value()) {
+                          ret_values.emplace(p.first, maybe_val.value());
+                      }
+                  });
+    return vector(std::move(ret_values));
+}
+
+std::function<std::optional<primitive>(const std::string &)> func::value_getter_of(const value_holder &holder) {
+
+    if (holder.holds<primitive>()) {
+        const auto &val = holder.get<primitive>();
+        return [val](auto &sym) -> std::optional<primitive> {
+            return val;
+        };
+    }
+
+    auto vec = holder.holds<identifier_ref>()
+               ? holder.de_ref()
+               : holder.get<vector>();
+    const auto &values = vec.get_values();
+    return [values](auto &sym) -> std::optional<primitive> {
+        auto iter = values.find(sym);
+        if (iter != values.end()) {
+            return iter->second;
+        }
+        return std::nullopt;
+    };
 }

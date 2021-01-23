@@ -27,6 +27,8 @@ runtime::runtime(std::string date,
     functions.emplace("noisy", func::noisy);
     functions.emplace("log", func::log);
     functions.emplace("exp", func::exp);
+    functions.emplace("count", func::count);
+    functions.emplace("if", func::if_select);
     functions.emplace("sqrt", func::sqrt);
     functions.emplace("drop_false", func::drop_false);
 
