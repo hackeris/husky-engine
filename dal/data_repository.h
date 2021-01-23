@@ -53,7 +53,10 @@ namespace husky {
 
     class data_repository {
     public:
-        explicit data_repository(std::shared_ptr<Client> client, std::shared_ptr<value_cache> cache);
+        explicit data_repository(
+                std::shared_ptr<Client> client,
+                std::shared_ptr<value_cache> cache,
+                size_t financial_batch_size);
 
         bool factor_exists(const std::string &code);
 
@@ -84,6 +87,7 @@ namespace husky {
         std::string get_date(Session &sess, const std::string &base, int offset);
 
     private:
+        size_t financial_batch_size_;
         std::shared_ptr<Client> client;
         std::shared_ptr<value_cache> cache_;
     };

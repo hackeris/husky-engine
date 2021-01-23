@@ -15,8 +15,11 @@
 
 using namespace husky;
 
-data_repository::data_repository(std::shared_ptr<Client> client, std::shared_ptr<value_cache> cache)
-        : client(std::move(client)), cache_(std::move(cache)) {
+data_repository::data_repository(
+        std::shared_ptr<Client> client, std::shared_ptr<value_cache> cache,
+        size_t financial_batch_size)
+        : client(std::move(client)), cache_(std::move(cache)),
+          financial_batch_size_(financial_batch_size) {
 }
 
 std::vector<std::string> data_repository::get_dates(Session &sess) {
@@ -72,7 +75,7 @@ std::map<std::string, float> data_repository::get_factor_values(
 }
 
 std::map<std::string, float>
-data_repository::get_financial_values(Session &sess,  const factor& f, const std::string &date, int offset) {
+data_repository::get_financial_values(Session &sess, const factor &f, const std::string &date, int offset) {
 
     std::string sqlFormat = "("
                             "SELECT `symbol`,`value` FROM financial_factor_data "
@@ -108,11 +111,10 @@ data_repository::get_financial_values(Session &sess,  const factor& f, const std
 
     std::map<std::string, float> result;
 
-    size_t chunk_size = 200;
     auto iter = raw_sqls.begin();
     while (iter != raw_sqls.end()) {
         auto diff = raw_sqls.end() - iter;
-        auto end = iter + std::min((long) diff, (long) chunk_size);
+        auto end = iter + std::min((long) diff, (long) financial_batch_size_);
         if (end != iter) {
             auto chunk = fetch_data(join_sqls(iter, end));
             result.insert(chunk.begin(), chunk.end());
@@ -178,7 +180,7 @@ factor data_repository::get_factor(Session &sess, const std::string &code) {
 }
 
 std::map<std::string, float> data_repository::get_market_values(
-        Session &sess,  const factor& f, const std::string &date, int offset) {
+        Session &sess, const factor &f, const std::string &date, int offset) {
 
     const std::string &date_ = get_date(sess, date, offset);
     if (date_.empty()) {
@@ -210,7 +212,7 @@ std::map<std::string, float> data_repository::get_market_values(
 
 std::map<std::string, float>
 data_repository::get_formula_values(
-        Session &sess,  const factor& f, const std::string &date, int offset) {
+        Session &sess, const factor &f, const std::string &date, int offset) {
 
     const std::string &date_ = get_date(sess, date, offset);
     if (date_.empty()) {

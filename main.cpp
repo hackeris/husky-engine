@@ -55,6 +55,7 @@ int startService(int argc, const char *argv[]) {
     auto database = config["database"].as_string();
     auto entry = config["entry"].as_string();
     auto client_config = config["client"].serialize();
+    auto financial_batch_size = config["financial_batch_size"].as_integer();
 
     auto cache_size = config["cache_size"].as_integer();
 
@@ -67,7 +68,7 @@ int startService(int argc, const char *argv[]) {
             uri, DbDoc(client_config));
 
     auto cache = std::make_shared<value_cache>(cache_size);
-    auto dal = std::make_shared<data_repository>(client, cache);
+    auto dal = std::make_shared<data_repository>(client, cache, financial_batch_size);
 
     controller api(dal, cache);
     router route;
@@ -83,6 +84,7 @@ int startService(int argc, const char *argv[]) {
 
     volatile bool running = true;
     signal_handler = [&listener, &running] {
+        std::cout << "exiting..." << std::endl;
         listener.close().wait();
         running = false;
     };
