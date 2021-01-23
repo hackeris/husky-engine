@@ -43,6 +43,8 @@ namespace husky::api {
 
         void cache_usage(const http_request &req) const;
 
+        void cache_clear(const http_request &req);
+
     private:
         [[nodiscard]]
         value_holder compute(const std::string &formula, const std::string &date) const;

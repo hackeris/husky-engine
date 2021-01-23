@@ -95,6 +95,10 @@ public:
         return cache_.size();
     }
 
+    inline void clear() {
+        cache_.clear();
+    }
+
     [[nodiscard]]
     inline size_t used() const {
         return cache_.used();

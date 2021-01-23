@@ -50,7 +50,7 @@ public:
     explicit auto_timer(std::string msg) : msg(std::move(msg)) { tmr_.start(); }
 
     ~auto_timer() {
-        std::cout << msg << ", elapsed:" << tmr_.elapsed_ms() << "ms." << std::endl;
+        std::cout << msg << ", elapsed: " << tmr_.elapsed_ms() << "ms." << std::endl;
     }
 
 private:

@@ -61,6 +61,12 @@ public:
         return std::make_optional(ent.value);
     }
 
+    void clear() {
+        std::lock_guard<std::mutex> lk(mtx_);
+        cache_.clear();
+        keys_.clear();
+    }
+
     [[nodiscard]]
     size_t size() const {
         return size_;

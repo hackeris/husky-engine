@@ -70,6 +70,11 @@ void controller::cache_usage(const http_request &req) const {
     req.reply(status_codes::OK, res);
 }
 
+void controller::cache_clear(const http_request &req) {
+    cache_->clear();
+    req.reply(status_codes::OK);
+}
+
 value_holder controller::compute(const std::string &formula, const std::string &date) const {
 
     if (cache_->size() > 0) {
@@ -172,3 +177,4 @@ json::value controller::to_json(const std::vector<syntax_error_item> &errors) {
         return json::value::array();
     }
 }
+
