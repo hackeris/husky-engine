@@ -92,8 +92,6 @@ data_repository::get_financial_values(Session &sess,  const factor& f, const std
                        return std::string(buf);
                    });
 
-    raw_sqls.begin();
-
     auto join_sqls = [](std::vector<std::string>::iterator begin,
                         std::vector<std::string>::iterator end) -> auto {
         return std::accumulate(begin, end,
@@ -188,7 +186,7 @@ std::map<std::string, float> data_repository::get_market_values(
     }
 
     if (cache_->size() > 0) {
-        auto values = cache_->get_values(f.code, date);
+        auto values = cache_->get_values(f.code, date_);
         if (values.has_value()) {
             return values.value();
         }
@@ -204,7 +202,7 @@ std::map<std::string, float> data_repository::get_market_values(
     auto values = make_values(result.fetchAll());
 
     if (cache_->size() > 0) {
-        cache_->put(f.code, date, values);
+        cache_->put(f.code, date_, values);
     }
 
     return values;
@@ -220,7 +218,7 @@ data_repository::get_formula_values(
     }
 
     if (cache_->size() > 0) {
-        auto values = cache_->get_values(f.formula, date);
+        auto values = cache_->get_values(f.formula, date_);
         if (values.has_value()) {
             return values.value();
         }
@@ -244,7 +242,7 @@ data_repository::get_formula_values(
                    });
 
     if (cache_->size() > 0) {
-        cache_->put(f.formula, date, values);
+        cache_->put(f.formula, date_, values);
     }
 
     return values;
