@@ -65,18 +65,17 @@ void controller::syntax_check(const http_request &req) const {
 
 void controller::cache_usage(const http_request &req) const {
     json::value res = json::value::object();
-    res["used"] = json::value::number((int) cache_.used());
-    res["size"] = json::value::number((int) cache_.size());
+    res["used"] = json::value::number((int) cache_->used());
+    res["size"] = json::value::number((int) cache_->size());
     req.reply(status_codes::OK, res);
 }
 
 value_holder controller::compute(const std::string &formula, const std::string &date) const {
 
-    cache_key key = cache_key{formula, date};
-    if (cache_.size() > 0) {
-        auto cached = const_cast<controller *>(this)->cache_.get(key);
+    if (cache_->size() > 0) {
+        auto cached = const_cast<controller *>(this)->cache_->get_value_holder(formula, date);
         if (cached.has_value()) {
-            return from_cache(cached.value());
+            return cached.value();
         }
     }
 
@@ -87,8 +86,8 @@ value_holder controller::compute(const std::string &formula, const std::string &
 
     value_holder value = gvm.run(graph);
 
-    if (cache_.size() > 0) {
-        const_cast<controller *>(this)->cache_.put(key, to_cache(value));
+    if (cache_->size() > 0) {
+        const_cast<controller *>(this)->cache_->put(formula, date, value);
     }
 
     return value;
@@ -172,51 +171,4 @@ json::value controller::to_json(const std::vector<syntax_error_item> &errors) {
     } else {
         return json::value::array();
     }
-}
-
-cache_value husky::api::to_cache(const value_holder &val) {
-    if (val.holds<vector>()) {
-        auto &v = val.get<vector>();
-        cached_vector cv = std::make_shared<raw_cached_vector>();
-        (*cv).resize(v.get_values().size());
-
-        int i = 0;
-        for (const auto &iter : v.get_values()) {
-            auto &el = (*cv)[i];
-            strcpy(el.symbol, iter.first.c_str());
-            if (iter.second.holds<int>()) {
-                el.type = cached_vector_element::type_integer;
-                el.value.v_i = iter.second.get<int>();
-            } else if (iter.second.holds<float>()) {
-                el.type = cached_vector_element::type_float;
-                el.value.v_f = iter.second.get<float>();
-            } else if (iter.second.holds<bool>()) {
-                el.type = cached_vector_element::type_bool;
-                el.value.v_b = iter.second.get<bool>();
-            }
-            i += 1;
-        }
-        return cv;
-    }
-    return val;
-}
-
-
-value_holder husky::api::from_cache(const cache_value &cv) {
-    if (std::holds_alternative<value_holder>(cv)) {
-        return std::get<value_holder>(cv);
-    }
-
-    cached_vector v = std::get<cached_vector>(cv);
-    std::map<std::string, primitive> result;
-    for (auto &el : *v) {
-        if (el.type == cached_vector_element::type_float) {
-            result.emplace(el.symbol, primitive(el.value.v_f));
-        } else if (el.type == cached_vector_element::type_integer) {
-            result.emplace(el.symbol, primitive(el.value.v_i));
-        } else if (el.type == cached_vector_element::type_bool) {
-            result.emplace(el.symbol, primitive(el.value.v_b));
-        }
-    }
-    return vector(std::move(result));
 }

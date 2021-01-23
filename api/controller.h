@@ -21,57 +21,8 @@
 #undef U
 
 #include "lang/graph_compiler.h"
+#include "dal/value_cache.h"
 
-namespace husky::api {
-    struct cache_key {
-        std::string formula;
-        std::string date;
-    public:
-        [[nodiscard]]
-        std::size_t hash() const {
-            std::size_t h1 = std::hash<std::string>{}(formula);
-            std::size_t h2 = std::hash<std::string>{}(date);
-            return h1 ^ (h2 << 1);
-        }
-
-        friend bool operator==(const cache_key &left, const cache_key &right) {
-            return left.formula == right.formula
-                   && left.date == right.date;
-        }
-    };
-
-    struct cached_vector_element {
-        char symbol[7];
-        char type;
-        union {
-            float v_f;
-            int v_i;
-            bool v_b;
-        } value;
-
-        static constexpr char type_float = 0;
-        static constexpr char type_integer = 1;
-        static constexpr char type_bool = 2;
-    };
-
-    using raw_cached_vector = std::vector<cached_vector_element>;
-    using cached_vector = std::shared_ptr<raw_cached_vector>;
-
-    using cache_value = std::variant<cached_vector, value_holder>;
-
-    cache_value to_cache(const value_holder &val);
-
-    value_holder from_cache(const cache_value &cv);
-}
-
-namespace std {
-    template<>
-    struct hash<husky::api::cache_key> {
-        std::size_t operator()(husky::api::cache_key const &s) const noexcept {
-            return s.hash();
-        }
-    };
-}
 
 namespace husky::api {
 
@@ -83,8 +34,8 @@ namespace husky::api {
 
     class controller {
     public:
-        explicit controller(std::shared_ptr<data_repository> dal, size_t cache_size)
-                : dal(std::move(dal)), cache_("value_cache", cache_size) {}
+        explicit controller(std::shared_ptr<data_repository> dal, std::shared_ptr<value_cache> cache)
+                : dal(std::move(dal)), cache_(std::move(cache)) {}
 
         void compute_post(const http_request &req) const;
 
@@ -112,7 +63,7 @@ namespace husky::api {
 
     private:
         std::shared_ptr<data_repository> dal;
-        lru_cache<cache_key, cache_value> cache_;
+        std::shared_ptr<value_cache> cache_;
     };
 }
 

@@ -27,7 +27,7 @@ runtime::runtime(std::string date,
     functions.emplace("noisy", func::noisy);
     functions.emplace("log", func::log);
     functions.emplace("exp", func::exp);
-    functions.emplace("sqrt_", func::sqrt);
+    functions.emplace("sqrt", func::sqrt);
     functions.emplace("drop_false", func::drop_false);
 
     internal_idents.emplace(

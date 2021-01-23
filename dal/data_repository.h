@@ -10,6 +10,8 @@
 
 #include <mysqlx/xdevapi.h>
 
+#include "dal/value_cache.h"
+
 using ::mysqlx::Session;
 using ::mysqlx::Schema;
 using ::mysqlx::Table;
@@ -51,7 +53,7 @@ namespace husky {
 
     class data_repository {
     public:
-        explicit data_repository(std::shared_ptr<Client> client);
+        explicit data_repository(std::shared_ptr<Client> client, std::shared_ptr<value_cache> cache);
 
         bool factor_exists(const std::string &code);
 
@@ -71,18 +73,19 @@ namespace husky {
         std::map<std::string, float> make_values(const std::list<Row> &rows);
 
         std::map<std::string, float> get_market_values(
-                Session &sess, int id, const std::string &date, int offset);
+                Session &sess, const factor &f, const std::string &date, int offset);
 
         std::map<std::string, float> get_financial_values(
-                Session &sess, int id, const std::string &date, int offset);
+                Session &sess, const factor &f, const std::string &date, int offset);
 
         std::map<std::string, float> get_formula_values(
-                Session &sess, const std::string &formula, const std::string &date, int offset);
+                Session &sess, const factor &f, const std::string &date, int offset);
 
         std::string get_date(Session &sess, const std::string &base, int offset);
 
     private:
         std::shared_ptr<Client> client;
+        std::shared_ptr<value_cache> cache_;
     };
 
 }

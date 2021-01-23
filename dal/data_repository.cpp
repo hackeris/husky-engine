@@ -15,8 +15,8 @@
 
 using namespace husky;
 
-data_repository::data_repository(std::shared_ptr<Client> client)
-        : client(std::move(client)) {
+data_repository::data_repository(std::shared_ptr<Client> client, std::shared_ptr<value_cache> cache)
+        : client(std::move(client)), cache_(std::move(cache)) {
 }
 
 std::vector<std::string> data_repository::get_dates(Session &sess) {
@@ -55,11 +55,11 @@ std::map<std::string, float> data_repository::get_factor_values(
 
     std::optional<std::map<std::string, float>> values;
     if (factor_.type == factor_type::market) {
-        values = get_market_values(sess, factor_.id, date, offset);
+        values = get_market_values(sess, factor_, date, offset);
     } else if (factor_.type == factor_type::financial) {
-        values = get_financial_values(sess, factor_.id, date, offset);
+        values = get_financial_values(sess, factor_, date, offset);
     } else if (factor_.type == factor_type::formula) {
-        values = get_formula_values(sess, factor_.formula, date, offset);
+        values = get_formula_values(sess, factor_, date, offset);
     }
 
     sess.close();
@@ -72,7 +72,7 @@ std::map<std::string, float> data_repository::get_factor_values(
 }
 
 std::map<std::string, float>
-data_repository::get_financial_values(Session &sess, int id, const std::string &date, int offset) {
+data_repository::get_financial_values(Session &sess,  const factor& f, const std::string &date, int offset) {
 
     std::string sqlFormat = "("
                             "SELECT `symbol`,`value` FROM financial_factor_data "
@@ -83,24 +83,46 @@ data_repository::get_financial_values(Session &sess, int id, const std::string &
                             ")";
 
     const auto &symbols = get_symbols(sess, date);
-    std::vector<std::string> rowSqls;
+    std::vector<std::string> raw_sqls;
     std::transform(symbols.begin(), symbols.end(),
-                   std::back_inserter(rowSqls),
-                   [&date, offset, id, sqlFormat](const std::string &symbol) -> std::string {
+                   std::back_inserter(raw_sqls),
+                   [&date, offset, &f, sqlFormat](const std::string &symbol) -> std::string {
                        char buf[512];
-                       snprintf(buf, 512, sqlFormat.c_str(), id, symbol.c_str(), date.c_str(), -offset);
+                       snprintf(buf, 512, sqlFormat.c_str(), f.id, symbol.c_str(), date.c_str(), -offset);
                        return std::string(buf);
                    });
 
-    auto sql = std::accumulate(rowSqls.begin(), rowSqls.end(),
+    raw_sqls.begin();
+
+    auto join_sqls = [](std::vector<std::string>::iterator begin,
+                        std::vector<std::string>::iterator end) -> auto {
+        return std::accumulate(begin, end,
                                std::string(),
                                [](const std::string &acc, const std::string &el) -> std::string {
                                    return acc.empty() ? el : acc + " union " + el;
                                });
+    };
+    auto fetch_data = [&sess, this](const std::string &sql) -> auto {
+        SqlResult result = sess.sql(sql)
+                .execute();
+        return make_values(result.fetchAll());
+    };
 
-    SqlResult result = sess.sql(sql)
-            .execute();
-    return make_values(result.fetchAll());
+    std::map<std::string, float> result;
+
+    size_t chunk_size = 100;
+    auto iter = raw_sqls.begin();
+    while (iter != raw_sqls.end()) {
+        auto diff = raw_sqls.end() - iter;
+        auto end = iter + std::min((long) diff, (long) chunk_size);
+        if (end != iter) {
+            auto chunk = fetch_data(join_sqls(iter, end));
+            result.insert(chunk.begin(), chunk.end());
+        }
+        iter = end;
+    }
+
+    return result;
 }
 
 std::vector<std::string> data_repository::get_symbols(const std::string &date) {
@@ -158,33 +180,53 @@ factor data_repository::get_factor(Session &sess, const std::string &code) {
 }
 
 std::map<std::string, float> data_repository::get_market_values(
-        Session &sess, int id, const std::string &date, int offset) {
+        Session &sess,  const factor& f, const std::string &date, int offset) {
 
     const std::string &date_ = get_date(sess, date, offset);
     if (date_.empty()) {
         return std::map<std::string, float>();
+    }
+
+    if (cache_->size() > 0) {
+        auto values = cache_->get_values(f.code, date);
+        if (values.has_value()) {
+            return values.value();
+        }
     }
 
     Schema schema = sess.getDefaultSchema();
     Table table = schema.getTable("factor_data");
     RowResult result = table.select("symbol", "value")
             .where("id = :id and date = :date")
-            .bind("id", std::to_string(id))
+            .bind("id", std::to_string(f.id))
             .bind("date", date_)
             .execute();
-    return make_values(result.fetchAll());
+    auto values = make_values(result.fetchAll());
+
+    if (cache_->size() > 0) {
+        cache_->put(f.code, date, values);
+    }
+
+    return values;
 }
 
 std::map<std::string, float>
 data_repository::get_formula_values(
-        Session &sess, const std::string &formula, const std::string &date, int offset) {
+        Session &sess,  const factor& f, const std::string &date, int offset) {
 
     const std::string &date_ = get_date(sess, date, offset);
     if (date_.empty()) {
         return std::map<std::string, float>();
     }
 
-    auto graph = graph_compiler::compile(formula);
+    if (cache_->size() > 0) {
+        auto values = cache_->get_values(f.formula, date);
+        if (values.has_value()) {
+            return values.value();
+        }
+    }
+
+    auto graph = graph_compiler::compile(f.formula);
     auto rt = std::make_shared<runtime>(
             date_, std::make_shared<data_repository>(*this));
     graph_vm vm(rt);
@@ -200,6 +242,10 @@ data_repository::get_formula_values(
                        auto el = vec.get(key);
                        return std::make_pair(key, el.value().get<float>());
                    });
+
+    if (cache_->size() > 0) {
+        cache_->put(f.formula, date, values);
+    }
 
     return values;
 }
@@ -218,7 +264,7 @@ std::string data_repository::get_date(Session &sess, const std::string &base, in
 std::vector<std::string> data_repository::get_symbols(Session &sess, const std::string &date) {
 
     const auto &factor_ = get_factor(sess, "close_price_backward");
-    const auto &values = get_market_values(sess, factor_.id, date, 0);
+    const auto &values = get_market_values(sess, factor_, date, 0);
 
     std::vector<std::string> symbols;
     std::transform(values.begin(), values.end(),

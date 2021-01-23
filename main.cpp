@@ -65,9 +65,11 @@ int startService(int argc, const char *argv[]) {
                       + std::to_string(db_port * 10) + "/" + database;
     auto client = std::make_shared<Client>(
             uri, DbDoc(client_config));
-    auto dal = std::make_shared<data_repository>(client);
 
-    controller api(dal, cache_size);
+    auto cache = std::make_shared<value_cache>(cache_size);
+    auto dal = std::make_shared<data_repository>(client, cache);
+
+    controller api(dal, cache);
     router route;
     route.support("/api/compute", methods::POST,
                   [&api](const http_request &req) { api.compute_post(req); });
