@@ -20,11 +20,15 @@ namespace husky {
 
         static value_holder sum_t(const runtime &rt, const std::vector<value_holder> &args);
 
+        static value_holder max_t(const runtime &rt, const std::vector<value_holder> &args);
+
         static value_holder std_t(const runtime &rt, const std::vector<value_holder> &args);
 
         static value_holder avg(const runtime &rt, const std::vector<value_holder> &args);
 
         static value_holder sum(const runtime &rt, const std::vector<value_holder> &args);
+
+        static value_holder max(const runtime &rt, const std::vector<value_holder> &args);
 
         static value_holder std(const runtime &rt, const std::vector<value_holder> &args);
 
@@ -49,9 +53,9 @@ namespace husky {
     private:
         static value_holder sqrt_(const value_holder &arg);
 
-        static value_holder avail_(const runtime &rt, const value_holder& holder, const primitive& default_value);
+        static value_holder avail_(const runtime &rt, const value_holder &holder, const primitive &default_value);
 
-        static std::function<std::optional<primitive>(const std::string &)> value_getter_of(const value_holder& holder);
+        static std::function<std::optional<primitive>(const std::string &)> value_getter_of(const value_holder &holder);
     };
 }
 

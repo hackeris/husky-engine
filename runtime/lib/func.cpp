@@ -115,6 +115,45 @@ value_holder func::sum_t(const runtime &rt, const std::vector<value_holder> &arg
     return value_holder(sum);
 }
 
+value_holder func::max_t(const runtime &rt, const std::vector<value_holder> &args) {
+
+    if (args.size() != 3) {
+        throw std::runtime_error("invalid arguments pass to max_t");
+    }
+
+    auto maybe_ref = args[0];
+    if (!maybe_ref.holds<vector_ref>()) {
+        throw std::runtime_error("invalid arguments pass to max_t");
+    }
+
+    const auto &ref = maybe_ref.get<vector_ref>();
+
+    int begin = args[1].get<primitive>().get<int>();
+    int end = args[2].get<primitive>().get<int>();
+
+    std::vector<vector> frames;
+    for (int i = begin; i <= end; i++) {
+        auto el = ref.get(i);
+        frames.emplace_back(el);
+    }
+
+    auto_timer tmr("max_t on " + std::to_string(end - begin + 1) + " frames");
+
+    vector max_v;
+    for (int i = 0; i < frames.size(); i++) {
+        if (i == 0) {
+            max_v = frames[i];
+        } else {
+            max_v = vector::binary_operator(max_v, frames[i],
+                                            [](auto &left, auto &right) -> decltype(auto) {
+                                                return (left > right).template get<bool>() ? left : right;
+                                            });
+        }
+    }
+
+    return value_holder(max_v);
+}
+
 value_holder func::std_t(const runtime &rt, const std::vector<value_holder> &args) {
 
     if (args.size() != 3) {
@@ -492,4 +531,22 @@ std::function<std::optional<primitive>(const std::string &)> func::value_getter_
         }
         return std::nullopt;
     };
+}
+
+value_holder func::max(const runtime &rt, const std::vector<value_holder> &args) {
+    vector vec = args[0].de_ref();
+    std::map<std::string, primitive> vec_values;
+    if (args.size() > 1) {
+        auto masked = mask(rt, vec, args[1].de_ref());
+        vec_values = masked.de_ref().get_values();
+    } else {
+        vec_values = vec.get_values();
+    }
+
+    primitive max_value(0);
+    for (const auto &iter : vec_values) {
+        max_value = (max_value > iter.second).get<bool>()
+                    ? max_value : iter.second;
+    }
+    return max_value;
 }
