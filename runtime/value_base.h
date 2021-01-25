@@ -80,7 +80,7 @@ namespace husky {
         public:
             template<typename T>
             decltype(auto) operator()(const T &left, const T &right) {
-                return left > right;
+                return left >= right;
             }
         };
 
