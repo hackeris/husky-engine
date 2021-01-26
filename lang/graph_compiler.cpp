@@ -240,6 +240,8 @@ atom_ptr graph_compiler::wrap_atom(const Any &any) {
         return std::make_shared<atom>(any.as<expression_ptr>());
     } else if (any.is<array_index>()) {
         return std::make_shared<atom>(any.as<array_index>());
+    } else if (any.is<binary_op>()) {
+        return std::make_shared<atom>(std::make_shared<expression>(any.as<binary_op>()));
     } else {
         throw std::runtime_error("unexpected child type");
     }
