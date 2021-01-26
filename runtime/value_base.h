@@ -342,6 +342,14 @@ namespace husky {
                 if (left.contains(it) && right.contains(it)) {
                     auto left_ = left.get(it);
                     auto right_ = right.get(it);
+
+                    if constexpr (std::is_same<OpType, husky::ops::div>::value) {
+                        if (right_.value().template holds<float>()
+                            && right_.value().template get<float>() == 0.0f) {
+                            continue;
+                        }
+                    }
+
                     result.put(it, op(left_.value(), right_.value()));
                 }
             }
