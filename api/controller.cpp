@@ -103,6 +103,11 @@ web::json::value to_object(const std::map<std::string, primitive> &values) {
     using namespace web;
     json::value result = json::value::object();
     for (auto &pair: values) {
+        if constexpr (std::is_same<T, float>::value) {
+            if (std::numeric_limits<T>::infinity() == pair.second.template get<T>()) {
+                continue;
+            }
+        }
         result[pair.first] = json::value::number(pair.second.template get<T>());
     }
     return result;
