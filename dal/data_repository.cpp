@@ -81,8 +81,8 @@ data_repository::get_financial_values(Session &sess, const factor &f, const std:
                             "SELECT `symbol`,`value` FROM financial_factor_data "
                             " WHERE id = %d"
                             " AND symbol = '%s'"
-                            " AND date <= '%s'"
-                            " ORDER BY date DESC LIMIT %d, 1"
+                            " AND releaseDate <= '%s'"
+                            " ORDER BY endDate DESC LIMIT %d, 1"
                             ")";
 
     const auto &symbols = get_symbols(sess, date);
