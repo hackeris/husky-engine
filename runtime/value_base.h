@@ -188,14 +188,14 @@ namespace husky {
             if (left.holds<bool>() && right.holds<bool>()) {
                 return primitive(left.get<bool>() && right.get<bool>());
             }
-            throw std::runtime_error("unexpected type on operator");
+            throw std::runtime_error("unexpected type on primitive and operator");
         }
 
         friend inline primitive operator||(const primitive &left, const primitive &right) {
             if (left.holds<bool>() && right.holds<bool>()) {
                 return primitive(left.get<bool>() || right.get<bool>());
             }
-            throw std::runtime_error("unexpected type on operator");
+            throw std::runtime_error("unexpected type on primitive or operator");
         }
 
         friend inline primitive operator-(const primitive &operand) {
@@ -214,7 +214,7 @@ namespace husky {
                 float right_ = right.holds<float>() ? right.get<float>() : (float) right.get<int>();
                 return primitive((float) pow(left_, right_));
             }
-            throw std::runtime_error("unexpected type on operator");
+            throw std::runtime_error("unexpected type on primitive power");
         }
 
         template<typename V>
@@ -242,7 +242,7 @@ namespace husky {
             } else if (left.holds<int>() && right.holds<float>()) {
                 return op((float) left.get<int>(), right.get<float>());
             }
-            throw std::runtime_error("unexpected type on operator");
+            throw std::runtime_error("unexpected type on primitive binary_operator");
         }
 
         template<class OP>
@@ -254,7 +254,7 @@ namespace husky {
             } else if (value.holds<bool>()) {
                 return op(value.get<bool>());
             }
-            throw std::runtime_error("unexpected type on operator");
+            throw std::runtime_error("unexpected type on primitive unary_operator");
         }
 
     private:
