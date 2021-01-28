@@ -9,6 +9,9 @@
 
 #include <utility>
 
+#include "graph_vm.h"
+#include "lang/graph_compiler.h"
+
 using namespace husky;
 
 runtime::runtime(std::string date,
@@ -59,6 +62,17 @@ runtime::runtime(std::string date,
             wrap([](const auto &s) -> decltype(auto) {
                 return s[0] == '0' || s[0] == '3';
             }));
+
+    internal_idents.emplace(
+            "a50", wrap("rank(circ_mv, !star) <= 50"));
+    internal_idents.emplace(
+            "csi300", wrap("rank(circ_mv, !star) <= 300"));
+    internal_idents.emplace(
+            "csi500", wrap("rank(circ_mv, !star) > 300 & rank(circ_mv, !star) <= 800"));
+    internal_idents.emplace(
+            "csi800", wrap("rank(circ_mv, !star) <= 800"));
+    internal_idents.emplace(
+            "chi_next_100", wrap("rank(circ_mv, chi_next) <= 100"));
 }
 
 bool runtime::has_function(const std::string &name) const {
@@ -97,7 +111,7 @@ value_holder runtime::evaluate(const identifier_ref &identifier) const {
     }
 
     return vector_ref([this, name](int index) -> vector {
-        return wrap(repo->get_factor_values(name, date, index));
+        return to_vector(repo->get_factor_values(name, date, index));
     });
 }
 
@@ -113,7 +127,7 @@ value_holder runtime::evaluate(const identifier_ref &identifier, int index) cons
     });
 }
 
-vector runtime::wrap(const std::map<std::string, float> &values) const {
+vector runtime::to_vector(const std::map<std::string, float> &values) const {
     std::map<std::string, primitive> result;
     for (auto &pair : values) {
         result.emplace(pair.first, primitive((float) pair.second));
@@ -144,6 +158,16 @@ std::function<value_holder(const runtime &rt)> runtime::wrap(
                            return std::make_pair(s, primitive{val});
                        });
         return value_holder(vector(std::move(values)));
+    };
+}
+
+std::function<value_holder(const runtime &rt)> runtime::wrap(const std::string &formula) {
+
+    return [formula](const runtime &rt) -> decltype(auto) {
+        auto graph = graph_compiler::compile(formula);
+        auto new_rt = std::make_shared<runtime>(rt.date, rt.repo);
+        graph_vm vm(new_rt);
+        return vm.run(graph);
     };
 }
 

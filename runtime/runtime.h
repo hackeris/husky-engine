@@ -48,10 +48,13 @@ namespace husky {
 
     private:
         [[nodiscard]]
-        vector wrap(const std::map<std::string, float> &values) const;
+        vector to_vector(const std::map<std::string, float> &values) const;
 
         std::function<value_holder(const runtime &rt)> wrap(
                 const std::function<bool(const std::string &)> &pred);
+
+        std::function<value_holder(const runtime &rt)> wrap(
+                const std::string& formula);
 
     private:
         std::string date;
