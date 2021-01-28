@@ -27,7 +27,7 @@ value_holder func::rank(const runtime &rt, const std::vector<value_holder> &args
 
     std::sort(values.begin(), values.end(),
               [](const auto &left, const auto &right) -> bool {
-                  primitive b = left.second >= right.second;
+                  primitive b = left.second > right.second;
                   return b.get<bool>();
               });
 
