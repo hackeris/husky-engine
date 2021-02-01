@@ -73,7 +73,10 @@ namespace husky {
 
         factor get_factor(Session &sess, const std::string &code);
 
-        std::map<std::string, float> make_values(const std::list<Row> &rows);
+        std::map<std::string, float> symbol_value_pairs(const std::list<Row> &rows);
+
+        std::vector<std::tuple<std::string, std::string, float>>
+            raw_financial_triples(const std::list<Row> &rows);
 
         std::map<std::string, float> get_market_values(
                 Session &sess, const factor &f, const std::string &date, int offset);
@@ -81,7 +84,13 @@ namespace husky {
         std::map<std::string, float> get_financial_values(
                 Session &sess, const factor &f, const std::string &date, int offset);
 
+        std::vector<std::tuple<std::string , std::string , float> >
+            get_raw_financial_values(Session &sess, const factor& f, const std::string& date, int offset);
+
         std::map<std::string, float> get_formula_values(
+                Session &sess, const factor &f, const std::string &date, int offset);
+
+        std::map<std::string, float> get_financial_dq_values(
                 Session &sess, const factor &f, const std::string &date, int offset);
 
         std::string get_date(Session &sess, const std::string &base, int offset);

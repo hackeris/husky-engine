@@ -120,7 +120,8 @@ namespace husky {
     class value_base {
     public:
         template<typename T>
-        [[nodiscard]] inline bool is() const {
+        [[nodiscard]]
+        inline bool is() const {
             auto *ptr = dynamic_cast<const T *>(this);
             return ptr != nullptr;
         }
