@@ -142,11 +142,12 @@ data_repository::get_financial_dq_values(
         auto &el = iter.second;
         if (first_season(el.cur)) {
             values.emplace(sym, el.cur_value);
-        }
-        auto pp = prev.find(sym);
-        if (pp != prev.end()) {
-            auto &pel = pp->second;
-            values.emplace(sym, el.cur_value - pel.cur_value);
+        } else {
+            auto pp = prev.find(sym);
+            if (pp != prev.end()) {
+                auto &pel = pp->second;
+                values.emplace(sym, el.cur_value - pel.cur_value);
+            }
         }
     }
     return values;
