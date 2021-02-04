@@ -249,18 +249,20 @@ value_holder func::zscore(const runtime &rt, const std::vector<value_holder> &ar
     vector vec = args[0].de_ref();
     primitive cap = args[2].get<primitive>();
 
+    std::map<std::string, primitive> vec_values = vec.get_values();
+    
     auto masked = mask(rt, vec, args[1].de_ref());
-    std::map<std::string, primitive> vec_values = masked.de_ref().get_values();
+    std::map<std::string, primitive> masked_values = masked.de_ref().get_values();
 
     primitive sum(0);
-    for (const auto &iter : vec_values) {
+    for (const auto &iter : masked_values) {
         sum = sum + iter.second;
     }
 
-    float n = vec_values.size();
+    float n = masked_values.size();
     auto avg = sum / primitive(n);
     primitive ss(0);
-    for (const auto &iter : vec_values) {
+    for (const auto &iter : masked_values) {
         auto delta = (iter.second - avg);
         ss = ss + delta * delta;
     }
